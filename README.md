@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # LANDGUARD — Land Conflict Intelligence System
 
 > **⚠ Educational Prototype — Synthetic Demo Data Only**
@@ -340,4 +339,4 @@ This project was developed with the assistance of AI tools:
 =======
 # LANDGUARD
 Land Conflict Intelligence System - LandTech 2026
->>>>>>> 92ccb1304885ea36f4317bdb5c4131c237e57490
+
