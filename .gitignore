@@ -1,0 +1,67 @@
+# LANDGUARD .gitignore
+
+# ──────────────────────────────────────────
+# OS files
+# ──────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ──────────────────────────────────────────
+# Editor / IDE
+# ──────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# ──────────────────────────────────────────
+# Node (if npm/npx is used for local server)
+# ──────────────────────────────────────────
+node_modules/
+npm-debug.log
+package-lock.json
+
+# ──────────────────────────────────────────
+# Local dev / temp
+# ──────────────────────────────────────────
+*.log
+*.tmp
+*.bak
+
+# ──────────────────────────────────────────
+# Credentials — NEVER commit these
+# ──────────────────────────────────────────
+.env
+.env.local
+*.pem
+secrets.js
+config.local.js
+
+# ──────────────────────────────────────────
+# Large media (add video separately or via LFS)
+# ──────────────────────────────────────────
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# ──────────────────────────────────────────
+# Keep these tracked (do NOT ignore)
+# ──────────────────────────────────────────
+# index.html
+# css/styles.css
+# js/risk-engine.js
+# js/app.js
+# data/demo-data.js
+# README.md
+# submission/*.md
+# screenshots/*.png

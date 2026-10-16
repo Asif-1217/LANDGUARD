@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LANDGUARD — Land Conflict Intelligence System. An educational prototype that helps users inspect synthetic land records and understand potential inconsistencies.">
+  <title>LANDGUARD — Land Conflict Intelligence System</title>
+
+  <!-- Web Fonts: Inter (primary English interface font) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Favicon: shield emoji as SVG favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+
+  <!-- Immediate Theme Initialization (Prevents FOUC) -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('landguard_theme');
+        var theme = savedTheme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('lang', 'en');
+      } catch(e) {}
+    })();
+  </script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     APP LAYOUT
+══════════════════════════════════════════════════════════ -->
+<div class="app-layout">
+
+  <!-- ╔══════════════════════════════╗
+       ║         SIDEBAR NAV          ║
+       ╚══════════════════════════════╝ -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-brand">
+      <div class="brand-title"><span class="brand-shield" aria-hidden="true">🛡</span> LANDGUARD</div>
+      <div class="brand-tagline" data-i18n="brandTagline">Land Conflict Intelligence</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label" data-i18n="navMain">Main</div>
+      <a href="#" class="nav-link active" data-nav="dashboard" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">🏠</span>
+        <span data-i18n="navDashboard">Dashboard</span>
+      </a>
+      <a href="#" class="nav-link" data-nav="scenarios">
+        <span class="nav-icon" aria-hidden="true">📂</span>
+        <span data-i18n="navScenarios">Demo Scenarios</span>
+      </a>
+
+      <div class="nav-section-label" data-i18n="navAnalysis">Analysis</div>
+      <a href="#" class="nav-link" data-nav="plot-detail">
+        <span class="nav-icon" aria-hidden="true">🗺</span>
+        <span data-i18n="navPlotDetail">Plot Records</span>
+      </a>
+      <a href="#" class="nav-link" data-nav="conflict-replay">
+        <span class="nav-icon" aria-hidden="true">🔍</span>
+        <span data-i18n="navConflictReplay">Conflict Replay</span>
+      </a>
+      <a href="#" class="nav-link" data-nav="risk-panel">
+        <span class="nav-icon" aria-hidden="true">📊</span>
+        <span data-i18n="navRiskPanel">Risk Explanation</span>
+      </a>
+
+      <div class="nav-section-label" data-i18n="navReference">Reference</div>
+      <a href="#" class="nav-link" data-nav="about">
+        <span class="nav-icon" aria-hidden="true">ℹ</span>
+        <span data-i18n="navAbout">About &amp; Rules</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <strong data-i18n="educationalBadge">Educational Prototype</strong><br>
+      <span data-i18n="footerNotice">EDUCATIONAL PROTOTYPE: All data is synthetic and fictional. Not an official legal opinion.</span><br>
+      &copy; <span id="disclaimer-year"></span> LANDGUARD Demo
+    </div>
+  </aside>
+
+  <!-- ╔══════════════════════════════╗
+       ║         MAIN CONTENT         ║
+       ╚══════════════════════════════╝ -->
+  <div class="main-content">
+
+    <!-- Top Header -->
+    <header class="top-header" role="banner">
+      <!-- Mobile menu button (shown only on small screens via CSS) -->
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+        ☰
+      </button>
+
+      <!-- Header Search Bar -->
+      <div class="header-search" role="search">
+        <svg class="header-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search"
+               id="search-input"
+               placeholder="Search by Plot ID (e.g. PLT-2002, PLT-2007)..."
+               aria-label="Search by Plot ID"
+               autocomplete="off"
+               list="plot-ids">
+        <datalist id="plot-ids">
+          <option value="PLT-2001">
+          <option value="PLT-2002">
+          <option value="PLT-2003">
+          <option value="PLT-2004">
+          <option value="PLT-2005">
+          <option value="PLT-2006">
+          <option value="PLT-2007">
+        </datalist>
+        <div id="search-suggestions" role="listbox" aria-label="Plot ID suggestions"></div>
+      </div>
+
+      <div class="header-right">
+        <button class="btn btn-sm btn-primary" id="search-btn" data-i18n="searchBtn" aria-label="Search for Plot ID">Search</button>
+
+        <!-- Theme Toggle Button (Light/Dark) -->
+        <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" data-theme-toggle aria-label="Toggle color theme" title="Toggle theme">
+          <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+
+        <span class="prototype-badge" role="note" aria-label="Prototype — demo data only" data-i18n="prototypeBadge">DEMO DATA</span>
+      </div>
+    </header>
+
+    <!-- Page Content Area -->
+    <main id="main-pages" role="main">
+      <div class="page-container">
+
+        <!-- ╔══════════════════════════════════════════════════════╗
+             ║  PAGE 1: DASHBOARD                                   ║
+             ╚══════════════════════════════════════════════════════╝ -->
+        <section class="page active" id="page-dashboard" aria-label="Dashboard">
+
+          <!-- Hero Banner -->
+          <div class="hero-banner" role="region" aria-label="Project introduction">
+            <div class="hero-content">
+              <h1 class="hero-title">
+                <span>🛡</span> <span data-i18n="heroTitlePrefix">LANDGUARD</span><br>
+                <span data-i18n="heroTitleSuffix">Land Conflict Intelligence</span>
+              </h1>
+              <p class="hero-desc" data-i18n="heroDesc">
+                Inspect synthetic land records, detect potential inconsistencies, and understand conflict indicators through transparent, rule-based analysis. Built for the Land Technology Innovation Hackathon.
+              </p>
+              <div class="hero-search">
+                <input type="search"
+                       id="dash-search-input"
+                       placeholder="Enter a Plot ID to begin (e.g. PLT-2002)..."
+                       aria-label="Search plots by ID">
+                <button class="btn btn-outline-white" id="dash-search-btn" data-i18n="searchBtn">Search</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Demo Scenario Strip -->
+          <div class="quick-scenarios-strip" id="quick-scenarios-strip" role="region" aria-label="Quick scenario selection"></div>
+
+          <!-- Stats Cards -->
+          <div class="stats-grid" role="region" aria-label="Dataset summary statistics">
+            <div class="stat-card stat-card--total">
+              <div class="stat-icon" aria-hidden="true">🗺</div>
+              <div class="stat-number" id="stat-total">0</div>
+              <div class="stat-label" data-i18n="statTotalPlots">Total Demo Plots</div>
+              <div class="stat-sublabel" data-i18n="statTotalPlotsSub">In synthetic dataset</div>
+            </div>
+            <div class="stat-card stat-card--conflicts">
+              <div class="stat-icon" aria-hidden="true">⚠</div>
+              <div class="stat-number" id="stat-conflicts">0</div>
+              <div class="stat-label" data-i18n="statConflicts">Potential Conflicts</div>
+              <div class="stat-sublabel" data-i18n="statConflictsSub">Medium or High risk level</div>
+            </div>
+            <div class="stat-card stat-card--incomplete">
+              <div class="stat-icon" aria-hidden="true">⚪</div>
+              <div class="stat-number" id="stat-incomplete">0</div>
+              <div class="stat-label" data-i18n="statIncomplete">Incomplete Records</div>
+              <div class="stat-sublabel" data-i18n="statIncompleteSub">Partial or incomplete data</div>
+            </div>
+            <div class="stat-card stat-card--reviewed">
+              <div class="stat-icon" aria-hidden="true">✅</div>
+              <div class="stat-number" id="stat-reviewed">0</div>
+              <div class="stat-label" data-i18n="statReviewed">Records Reviewed</div>
+              <div class="stat-sublabel" data-i18n="statReviewedSub">In this demo session</div>
+            </div>
+          </div>
+
+          <!-- Visual Analytics Section (Risk Distribution Donut + Land Use Bar Chart) -->
+          <div class="dashboard-visuals-grid" id="dashboard-charts-container" role="region" aria-label="Visual analytics"></div>
+
+          <!-- Recent Cases -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title" data-i18n="demoRecordsTitle">📋 Demo Land Records</h2>
+              <button class="btn btn-primary btn-sm" id="explore-demo-btn" data-i18n="exploreScenariosBtn">
+                Explore Demo Scenarios →
+              </button>
+            </div>
+            <div class="case-header" aria-hidden="true">
+              <div data-i18n="colPlotId">Plot ID</div>
+              <div data-i18n="colLocation">Location</div>
+              <div data-i18n="colScenario">Scenario</div>
+              <div data-i18n="colRiskLevel">Risk Level</div>
+              <div data-i18n="colAction">Action</div>
+            </div>
+            <div id="recent-cases" role="list" aria-label="Demo land records">
+              <!-- Populated dynamically by JS -->
+            </div>
+          </div>
+
+          <!-- Disclaimer Card -->
+          <div class="card" role="note" aria-label="Responsible use disclaimer" style="border-left: 4px solid var(--warning);">
+            <div class="card-header">
+              <h2 class="card-title" data-i18n="disclaimerTitle">⚠ Responsible Use Disclaimer</h2>
+            </div>
+            <p data-i18n="disclaimerBody" style="font-size: 0.875rem; line-height: 1.8; color: var(--text-secondary);">
+              LANDGUARD is an educational prototype using synthetic demonstration data. It is not an official land-record verification service, legal opinion, or proof of fraud. Results indicate potential inconsistencies in the demo dataset and require verification through authorized sources and qualified professionals. All names, plot IDs, deed IDs, and property descriptions are entirely fictional.
+            </p>
+          </div>
+
+        </section>
+
+        <!-- ╔══════════════════════════════════════════════════════╗
+             ║  PAGE 2: DEMO SCENARIOS                              ║
+             ╚══════════════════════════════════════════════════════╝ -->
+        <section class="page" id="page-scenarios" aria-label="Demo scenarios">
+          <h1 class="page-title" data-i18n="scenariosPageTitle">📂 Demo Scenarios</h1>
+          <p class="page-subtitle" data-i18n="scenariosPageSubtitle">
+            Five ready-to-run scenarios demonstrating different conflict indicator patterns. Click 'Replay →' on any plot to open the Land Conflict Replay view.
+          </p>
+          <div class="scenarios-grid" id="scenarios-container">
+            <!-- Populated by JS -->
+          </div>
+        </section>
+
+        <!-- ╔══════════════════════════════════════════════════════╗
+             ║  PAGE 3: PLOT DETAIL                                 ║
+             ╚══════════════════════════════════════════════════════╝ -->
+        <section class="page" id="page-plot-detail" aria-label="Plot record detail">
+          <div id="plot-detail-content">
+            <!-- Initial empty state before search -->
+            <div class="empty-state">
+              <div class="empty-icon" aria-hidden="true">🗺</div>
+              <h2 data-i18n="emptyPlotDetailTitle">Plot Records</h2>
+              <p data-i18n="emptyPlotDetailDesc">Search for a Plot ID using the bar above, or select a demo plot below:</p>
+              <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
+                <button class="btn btn-outline btn-sm" onclick="loadPlotDetail('PLT-2001')">PLT-2001 (Consistent)</button>
+                <button class="btn btn-primary btn-sm" onclick="loadPlotDetail('PLT-2002')">PLT-2002 (Mismatch)</button>
+                <button class="btn btn-primary btn-sm" onclick="loadPlotDetail('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
+                <button class="btn btn-outline btn-sm" onclick="loadPlotDetail('PLT-2004')">PLT-2004 (Incomplete)</button>
+                <button class="btn btn-sm" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadPlotDetail('PLT-2007')">PLT-2007 (Medium Risk)</button>
+              </div>
+              <button class="btn btn-outline" onclick="navigateTo('scenarios')" data-i18n="browseAllScenariosBtn">Browse All Demo Scenarios →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ╔══════════════════════════════════════════════════════╗
+             ║  PAGE 4: CONFLICT REPLAY                             ║
+             ╚══════════════════════════════════════════════════════╝ -->
+        <section class="page" id="page-conflict-replay" aria-label="Land conflict replay">
+          <div id="conflict-replay-content">
+            <div class="empty-state">
+              <div class="empty-icon" aria-hidden="true">🔍</div>
+              <h2 data-i18n="emptyReplayTitle">Land Conflict Replay</h2>
+              <p data-i18n="emptyReplayDesc">Select a demo plot below to inspect its record comparison and conflict replay:</p>
+              <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
+                <button class="btn btn-outline btn-sm" onclick="loadConflictReplay('PLT-2001')">PLT-2001 (Consistent)</button>
+                <button class="btn btn-primary btn-sm" onclick="loadConflictReplay('PLT-2002')">PLT-2002 (Mismatch)</button>
+                <button class="btn btn-primary btn-sm" onclick="loadConflictReplay('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
+                <button class="btn btn-outline btn-sm" onclick="loadConflictReplay('PLT-2004')">PLT-2004 (Incomplete)</button>
+                <button class="btn btn-sm" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadConflictReplay('PLT-2007')">PLT-2007 (Medium Risk)</button>
+              </div>
+              <button class="btn btn-outline" onclick="navigateTo('scenarios')" data-i18n="browseAllScenariosBtn">Browse All Demo Scenarios →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ╔══════════════════════════════════════════════════════╗
+             ║  PAGE 5: RISK PANEL                                  ║
+             ╚══════════════════════════════════════════════════════╝ -->
+        <section class="page" id="page-risk-panel" aria-label="Risk explanation panel">
+          <div id="risk-panel-content">
+            <div class="empty-state">
+              <div class="empty-icon" aria-hidden="true">📊</div>
+              <h2 data-i18n="emptyRiskTitle">Risk Explanation</h2>
+              <p data-i18n="emptyRiskDesc">Select a demo plot below to inspect its rule-based risk score breakdown:</p>
+              <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
+                <button class="btn btn-outline btn-sm" onclick="loadRiskPanel('PLT-2001')">PLT-2001 (Consistent)</button>
+                <button class="btn btn-primary btn-sm" onclick="loadRiskPanel('PLT-2002')">PLT-2002 (Mismatch)</button>
+                <button class="btn btn-primary btn-sm" onclick="loadRiskPanel('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
+                <button class="btn btn-outline btn-sm" onclick="loadRiskPanel('PLT-2004')">PLT-2004 (Incomplete)</button>
+                <button class="btn btn-sm" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadRiskPanel('PLT-2007')">PLT-2007 (Medium Risk)</button>
+              </div>
+              <button class="btn btn-outline" onclick="navigateTo('scenarios')" data-i18n="browseAllScenariosBtn">Browse All Demo Scenarios →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ╔══════════════════════════════════════════════════════╗
+             ║  PAGE 6: ABOUT & RULES                               ║
+             ╚══════════════════════════════════════════════════════╝ -->
+        <section class="page" id="page-about" aria-label="About LANDGUARD and rules reference">
+          <h1 class="page-title" data-i18n="navAbout">About &amp; Rules</h1>
+          <p class="page-subtitle" data-i18n="allRulesRefSub">The complete scoring system — transparent and reproducible</p>
+
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">🛡 What is LANDGUARD?</h2></div>
+            <p style="font-size:0.9rem; line-height:1.8; color:var(--text-secondary); margin-bottom:1rem;">
+              LANDGUARD is an <strong>educational hackathon prototype</strong> that simulates a land conflict
+              intelligence system. It helps users understand what kinds of inconsistencies can appear in land records,
+              and how they might be identified through transparent, rule-based checks.
+            </p>
+            <p style="font-size:0.9rem; line-height:1.8; color:var(--text-secondary);">
+              The system operates entirely on <strong>synthetic, fictional demo data</strong>. It does not connect
+              to any government database, does not access real land records, and does not make legal determinations.
+              No real person's information is used or referenced.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title" data-i18n="allRulesRefTitle">📋 All Rules Reference</h2>
+              <span class="card-subtitle">Transparent &amp; Reproducible — No black-box AI</span>
+            </div>
+            <p style="font-size:0.875rem; margin-bottom:1rem; color:var(--text-secondary);">
+              Risk scores are calculated by summing the points of all triggered rules.
+              Maximum score is 100. Scores are capped if multiple rules would exceed this.
+            </p>
+
+            <!-- Rules Table -->
+            <div class="table-wrapper">
+              <table class="score-table" aria-label="Scoring rules reference">
+                <thead>
+                  <tr>
+                    <th data-i18n="colRuleId">Rule ID</th>
+                    <th data-i18n="colRuleName">Rule Name</th>
+                    <th data-i18n="colSeverity">Severity</th>
+                    <th data-i18n="colPoints">Points</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-01</span></td>
+                    <td><strong>Ownership Mismatch</strong></td>
+                    <td><span class="severity-badge severity-high">HIGH</span></td>
+                    <td class="points-cell">+40</td>
+                    <td style="font-size:0.82rem">Deed and mutation records show different owner names for the same plot.</td>
+                  </tr>
+                  <tr>
+                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-02</span></td>
+                    <td><strong>Duplicate Active Deeds</strong></td>
+                    <td><span class="severity-badge severity-high">HIGH</span></td>
+                    <td class="points-cell">+45</td>
+                    <td style="font-size:0.82rem">Multiple deeds with Active status exist for the same plot.</td>
+                  </tr>
+                  <tr>
+                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-03</span></td>
+                    <td><strong>Missing Mutation Record</strong></td>
+                    <td><span class="severity-badge severity-medium">MEDIUM</span></td>
+                    <td class="points-cell">+15</td>
+                    <td style="font-size:0.82rem">No mutation record found after deed registration.</td>
+                  </tr>
+                  <tr>
+                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-04</span></td>
+                    <td><strong>Unlinked Transfer Record</strong></td>
+                    <td><span class="severity-badge severity-medium">MEDIUM</span></td>
+                    <td class="points-cell">+10</td>
+                    <td style="font-size:0.82rem">Transfer history entry lacks corresponding deed or mutation cross-reference.</td>
+                  </tr>
+                  <tr>
+                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-05</span></td>
+                    <td><strong>Unverified Deed</strong></td>
+                    <td><span class="severity-badge severity-medium">MEDIUM</span></td>
+                    <td class="points-cell">+10</td>
+                    <td style="font-size:0.82rem">Deed verification status is other than "Verified".</td>
+                  </tr>
+                  <tr>
+                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-06</span></td>
+                    <td><strong>Chronological Inconsistency</strong></td>
+                    <td><span class="severity-badge severity-high">HIGH</span></td>
+                    <td class="points-cell">+20</td>
+                    <td style="font-size:0.82rem">Transfer date predates its referenced deed registration date.</td>
+                  </tr>
+                  <tr>
+                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-07</span></td>
+                    <td><strong>Missing Critical Fields</strong></td>
+                    <td><span class="severity-badge severity-low">LOW</span></td>
+                    <td class="points-cell">+5/field (max 20)</td>
+                    <td style="font-size:0.82rem">Required fields (area, consideration, witness) are absent from the record.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="margin-top:1rem; padding:0.85rem 1.25rem; background:var(--teal-faint); border-radius:var(--radius-md); font-size:0.85rem; color:var(--teal); border: 1px solid var(--border-color);">
+              <strong>Risk Level Thresholds:</strong><br>
+              Score 0 = No Conflict Detected &nbsp;|&nbsp;
+              1–19 = Low Risk &nbsp;|&nbsp;
+              20–49 = Medium Risk &nbsp;|&nbsp;
+              50–100 = High Risk &nbsp;|&nbsp;
+              RULE-07 only (Incomplete data) = Incomplete Data
+            </div>
+          </div>
+
+          <div class="card" style="border-left:4px solid var(--warning);">
+            <div class="card-header"><h2 class="card-title">⚠ What LANDGUARD Cannot Do</h2></div>
+            <ul style="font-size:0.875rem; line-height:2; color:var(--text-secondary);">
+              <li>It <strong>cannot</strong> access, query, or verify real government land records.</li>
+              <li>It <strong>cannot</strong> make legally binding ownership determinations.</li>
+              <li>It <strong>cannot</strong> confirm or deny that fraud has occurred.</li>
+              <li>It <strong>cannot</strong> replace advice from a qualified legal professional or licensed surveyor.</li>
+              <li>Results are based <strong>only</strong> on the fictional demo dataset included with this prototype.</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">🔬 Technology Stack</h2></div>
+            <ul style="font-size:0.875rem; line-height:2; color:var(--text-secondary);">
+              <li><strong>Frontend:</strong> HTML5, CSS3 (Custom Design Tokens, Light/Dark Modes), Vanilla JavaScript ES6+</li>
+              <li><strong>Language:</strong> English-only interface with centralized translation dictionary</li>
+              <li><strong>Data:</strong> Local synthetic JavaScript records representing land conflict patterns</li>
+              <li><strong>Backend:</strong> None required — 100% transparent client-side evaluation engine</li>
+              <li><strong>Dependencies:</strong> Zero external frameworks or paid APIs — runs locally in any modern browser</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">🎓 Hackathon Context</h2></div>
+            <p style="font-size:0.875rem; line-height:1.8; color:var(--text-secondary);">
+              LANDGUARD was built as a prototype for the <strong>Land Technology Innovation Hackathon</strong>.
+              It demonstrates how transparent, rule-based logic can surface potential inconsistencies
+              in land record datasets, and how a responsible, explainable approach can be taken
+              without making unsubstantiated legal claims.
+              The scoring algorithm is fully documented and reproducible from the rules above.
+            </p>
+          </div>
+        </section>
+
+      </div><!-- /page-container -->
+    </main><!-- /main-pages -->
+
+    <!-- Disclaimer Footer -->
+    <footer class="disclaimer-footer" role="contentinfo">
+      <strong data-i18n="educationalBadge">Educational Prototype</strong>:
+      <span data-i18n="footerNotice">EDUCATIONAL PROTOTYPE: All data is synthetic and fictional. Not an official legal opinion.</span>
+      &copy; <span id="footer-year"></span>
+    </footer>
+
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- ══════════════════════════════════════════════════════════
+     SCRIPTS (Strict loading order: data → i18n → theme → engine → app)
+══════════════════════════════════════════════════════════ -->
+<script src="data/demo-data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/risk-engine.js"></script>
+<script src="js/app.js"></script>
+
+<!-- Mobile nav and footer year patch -->
+<script>
+  // Footer years
+  document.querySelectorAll('#footer-year, #disclaimer-year').forEach(el => el.textContent = new Date().getFullYear());
+
+  // Mobile sidebar toggle
+  const menuBtn = document.getElementById('mobile-menu-btn');
+  const sidebar = document.getElementById('sidebar');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', () => {
+      const isOpen = sidebar.classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', isOpen);
+    });
+    // Close sidebar on nav link click (mobile)
+    sidebar.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', false);
+      });
+    });
+    // Close sidebar on outside click
+    document.addEventListener('click', e => {
+      if (!sidebar.contains(e.target) && e.target !== menuBtn) {
+        sidebar.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', false);
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
