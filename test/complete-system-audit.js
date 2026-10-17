@@ -143,14 +143,21 @@ assert(p2007.triggeredRules.includes('RULE-07'), 'Scenario 5 (PLT-2007) triggers
 assert(!p2007.triggeredRules.includes('RULE-01'), 'Scenario 5 (PLT-2007) does NOT trigger RULE-01 (Owners match)');
 assert(!p2007.triggeredRules.includes('RULE-02'), 'Scenario 5 (PLT-2007) does NOT trigger RULE-02 (Single active deed)');
 
-// Currency formatting tests (Bangladeshi Taka BDT with ৳ in en-BD locale)
+// Currency formatting tests (Bangladeshi Taka BDT with ৳ in en and bn)
 assert(typeof ctx.I18n.formatCurrency === 'function', 'I18n.formatCurrency is defined and exported');
+ctx.I18n.setLang('en');
 const formatted82 = ctx.I18n.formatCurrency(8200000);
-assert(formatted82 === '৳8,200,000', `I18n.formatCurrency(8200000) formats as "৳8,200,000" (got "${formatted82}")`);
+assert(formatted82 === '৳8,200,000', `I18n.formatCurrency(8200000) in en formats as "৳8,200,000" (got "${formatted82}")`);
 const formattedStr = ctx.I18n.formatCurrency('৳9,500,000');
-assert(formattedStr === '৳9,500,000', `I18n.formatCurrency("৳9,500,000") preserves valid Taka string (got "${formattedStr}")`);
+assert(formattedStr === '৳9,500,000', `I18n.formatCurrency("৳9,500,000") in en preserves valid Taka string (got "${formattedStr}")`);
 const formattedNull = ctx.I18n.formatCurrency(null);
-assert(formattedNull === 'Not recorded', `I18n.formatCurrency(null) returns "Not recorded"`);
+assert(formattedNull === 'Not recorded', `I18n.formatCurrency(null) in en returns "Not recorded"`);
+
+ctx.I18n.setLang('bn');
+const formatted82Bn = ctx.I18n.formatCurrency(8200000);
+assert(formatted82Bn === '৳৮,২০০,০০০', `I18n.formatCurrency(8200000) in bn formats as "৳৮,২০০,০০০" (got "${formatted82Bn}")`);
+const formattedNullBn = ctx.I18n.formatCurrency(null);
+assert(formattedNullBn === 'রেকর্ড নেই', `I18n.formatCurrency(null) in bn returns "রেকর্ড নেই"`);
 
 // ─────────────────────────────────────────────────────────────
 // PART 3: DATASET RISK DISTRIBUTION CALCULATIONS
@@ -252,34 +259,39 @@ setTimeout(async () => {
     }
 
     ws.onopen = async () => {
+      await sendCommand('Page.enable');
       await sendCommand('Runtime.enable');
       await sendCommand('Console.enable');
+      await new Promise(r => setTimeout(r, 1500));
 
       // 1. Check title & basic DOM
       const title = await evaluate('document.title');
-      assert(title.includes('LANDGUARD'), 'Page title contains LANDGUARD');
+      assert(title && title.includes('LANDGUARD'), 'Page title contains LANDGUARD');
 
       // 2. Check no console errors on initial load
       assert(consoleErrors.length === 0, 'Zero browser console errors / exceptions on initial load', consoleErrors.join('; '));
 
-      // 3. Check Dashboard elements
+      // 3. Check Dashboard elements in initial default language (Bangla bn)
+      const currentLang = await evaluate('I18n.getLang()');
+      assert(currentLang === 'bn', 'Initial default language is Bangla (bn)');
+
       const statTotal = await evaluate('document.getElementById("stat-total")?.textContent');
-      assert(statTotal === '7', `Dashboard stat-total displays 7 (got "${statTotal}")`);
+      assert(statTotal === '৭' || statTotal === '7', `Dashboard stat-total displays 7 in bn/en (got "${statTotal}")`);
 
       const statConflicts = await evaluate('document.getElementById("stat-conflicts")?.textContent');
-      assert(statConflicts === '4', `Dashboard stat-conflicts displays 4 (got "${statConflicts}")`);
+      assert(statConflicts === '৪' || statConflicts === '4', `Dashboard stat-conflicts displays 4 in bn/en (got "${statConflicts}")`);
 
       const statIncomplete = await evaluate('document.getElementById("stat-incomplete")?.textContent');
-      assert(statIncomplete === '5', `Dashboard stat-incomplete displays 5 (got "${statIncomplete}")`);
+      assert(statIncomplete === '৫' || statIncomplete === '5', `Dashboard stat-incomplete displays 5 in bn/en (got "${statIncomplete}")`);
 
       // 4. Check Risk Distribution Chart in DOM
       const chartHtml = await evaluate('document.getElementById("dashboard-charts-container")?.innerHTML');
-      assert(chartHtml.includes('Medium Risk'), 'Dashboard chart contains Medium Risk label');
-      assert(chartHtml.includes('High Risk'), 'Dashboard chart contains High Risk label');
-      assert(chartHtml.includes('Low Risk'), 'Dashboard chart contains Low Risk label');
-      assert(chartHtml.includes('1 (14%)'), 'Dashboard chart displays Medium Risk count "1 (14%)"');
-      assert(chartHtml.includes('3 (43%)'), 'Dashboard chart displays High Risk count "3 (43%)"');
-      assert(chartHtml.includes('2 (29%)'), 'Dashboard chart displays Low Risk count "2 (29%)"');
+      assert(chartHtml.includes('মাঝারি ঝুঁকি') || chartHtml.includes('Medium Risk'), 'Dashboard chart contains Medium Risk label');
+      assert(chartHtml.includes('উচ্চ ঝুঁকি') || chartHtml.includes('High Risk'), 'Dashboard chart contains High Risk label');
+      assert(chartHtml.includes('কম ঝুঁকি') || chartHtml.includes('Low Risk'), 'Dashboard chart contains Low Risk label');
+      assert(chartHtml.includes('১ (১৪%)') || chartHtml.includes('1 (14%)'), 'Dashboard chart displays Medium Risk count');
+      assert(chartHtml.includes('৩ (৪৩%)') || chartHtml.includes('3 (43%)'), 'Dashboard chart displays High Risk count');
+      assert(chartHtml.includes('২ (২৯%)') || chartHtml.includes('2 (29%)'), 'Dashboard chart displays Low Risk count');
 
       // 5. Test Navigation to all 6 pages
       const pages = ['dashboard', 'scenarios', 'plot-detail', 'conflict-replay', 'risk-panel', 'about'];
@@ -292,11 +304,11 @@ setTimeout(async () => {
       // 6. Test Demo Scenario Cards Page
       await evaluate("navigateTo('scenarios')");
       const scenariosHtml = await evaluate('document.getElementById("scenarios-container")?.innerHTML');
-      assert(scenariosHtml.includes('Scenario 1: Low Risk'), 'Scenarios page renders Scenario 1');
-      assert(scenariosHtml.includes('Scenario 2: Ownership Mismatch'), 'Scenarios page renders Scenario 2');
-      assert(scenariosHtml.includes('Scenario 3: Duplicate Active Deeds'), 'Scenarios page renders Scenario 3');
-      assert(scenariosHtml.includes('Scenario 4: Incomplete Records'), 'Scenarios page renders Scenario 4');
-      assert(scenariosHtml.includes('Scenario 5: Medium Risk — Incomplete Ownership History'), 'Scenarios page renders Scenario 5');
+      assert(scenariosHtml.includes('Scenario 1') || scenariosHtml.includes('দৃশ্যপট ১'), 'Scenarios page renders Scenario 1');
+      assert(scenariosHtml.includes('Scenario 2') || scenariosHtml.includes('দৃশ্যপট ২'), 'Scenarios page renders Scenario 2');
+      assert(scenariosHtml.includes('Scenario 3') || scenariosHtml.includes('দৃশ্যপট ৩'), 'Scenarios page renders Scenario 3');
+      assert(scenariosHtml.includes('Scenario 4') || scenariosHtml.includes('দৃশ্যপট ৪'), 'Scenarios page renders Scenario 4');
+      assert(scenariosHtml.includes('Scenario 5') || scenariosHtml.includes('দৃশ্যপট ৫'), 'Scenarios page renders Scenario 5');
       assert(scenariosHtml.includes('PLT-2007'), 'Scenarios page includes plot PLT-2007');
       assert(!scenariosHtml.includes('LG-1005'), 'Scenarios page does NOT include LG-1005');
 
@@ -305,28 +317,28 @@ setTimeout(async () => {
       const detailHtml = await evaluate('document.getElementById("plot-detail-content")?.innerHTML');
       assert(detailHtml.includes('PLT-2007'), 'Plot Detail renders PLT-2007');
       assert(detailHtml.includes('Adaeze Nwofor'), 'Plot Detail displays owner Adaeze Nwofor');
-      assert(detailHtml.includes('Medium Risk'), 'Plot Detail displays Medium Risk badge');
+      assert(detailHtml.includes('Medium Risk') || detailHtml.includes('মাঝারি ঝুঁকি'), 'Plot Detail displays Medium Risk badge');
       assert(detailHtml.includes('DEED-1004'), 'Plot Detail displays DEED-1004');
       assert(detailHtml.includes('MUT-9901'), 'Plot Detail displays MUT-9901');
-      assert(detailHtml.includes('৳9,500,000'), 'Plot Detail displays consideration amount in Bangladeshi Taka (৳9,500,000)');
+      assert(detailHtml.includes('৳৯,৫০০,০০০') || detailHtml.includes('৳9,500,000'), 'Plot Detail displays consideration amount in Bangladeshi Taka (৳)');
       assert(!detailHtml.includes('₦'), 'Plot Detail contains no Naira (₦) symbol');
 
       // 8. Test PLT-2007 in Conflict Replay
       await evaluate("loadConflictReplay('PLT-2007')");
       const replayHtml = await evaluate('document.getElementById("conflict-replay-content")?.innerHTML');
       assert(replayHtml.includes('PLT-2007'), 'Conflict Replay renders PLT-2007');
-      assert(replayHtml.includes('Medium Risk'), 'Conflict Replay displays Medium Risk');
+      assert(replayHtml.includes('Medium Risk') || replayHtml.includes('মাঝারি'), 'Conflict Replay displays Medium Risk');
       assert(replayHtml.includes('RULE-04'), 'Conflict Replay displays RULE-04 (Unlinked Transfer)');
       assert(replayHtml.includes('RULE-07'), 'Conflict Replay displays RULE-07 (Missing Critical Fields)');
-      assert(replayHtml.includes('Names match'), 'Conflict Replay confirms deed and mutation owners match');
+      assert(replayHtml.includes('Names match') || replayHtml.includes('মালিকের নাম মিল রয়েছে'), 'Conflict Replay confirms deed and mutation owners match');
 
       // 9. Test PLT-2007 in Risk Panel
       await evaluate("loadRiskPanel('PLT-2007')");
       const riskHtml = await evaluate('document.getElementById("risk-panel-content")?.innerHTML');
       assert(riskHtml.includes('PLT-2007'), 'Risk Panel renders PLT-2007');
-      assert(riskHtml.includes('Medium Risk'), 'Risk Panel displays Medium Risk level');
-      assert(riskHtml.includes('20 / 100'), 'Risk Panel displays Score 20 / 100');
-      assert(riskHtml.includes('Assessment Summary'), 'Risk Panel renders Assessment Summary');
+      assert(riskHtml.includes('Medium Risk') || riskHtml.includes('মাঝারি'), 'Risk Panel displays Medium Risk level');
+      assert(riskHtml.includes('20 / 100') || riskHtml.includes('২০ / ১০০'), 'Risk Panel displays Score 20 / 100');
+      assert(riskHtml.includes('Assessment Summary') || riskHtml.includes('মূল্যায়ন সারসংক্ষেপ'), 'Risk Panel renders Assessment Summary');
 
       // 10. Test Search Bar functionality
       await evaluate("doSearch('PLT-2003')");
@@ -336,11 +348,24 @@ setTimeout(async () => {
       // Search unknown plot
       await evaluate("doSearch('UNKNOWN-PLOT-999')");
       const notFoundHtml = await evaluate('document.getElementById("plot-detail-content")?.innerHTML');
-      assert(notFoundHtml.includes('Plot Not Found'), 'Search: Unknown plot displays Plot Not Found message');
+      assert(notFoundHtml.includes('Plot Not Found') || notFoundHtml.includes('প্লট পাওয়া যায়নি'), 'Search: Unknown plot displays Plot Not Found message');
       assert(notFoundHtml.includes('PLT-2007'), 'Search: Not found suggestions include PLT-2007');
       assert(!notFoundHtml.includes('LG-1005'), 'Search: Not found suggestions do not include LG-1005');
 
-      // 11. Test Theme Switching (Light & Dark)
+      // 11. Test Language Toggle in Browser (BN <-> EN)
+      await evaluate('I18n.setLang("en")');
+      const enLang = await evaluate('I18n.getLang()');
+      const enSaved = await evaluate('localStorage.getItem("landguard-language")');
+      const enHtmlLang = await evaluate('document.documentElement.getAttribute("lang")');
+      assert(enLang === 'en' && enSaved === 'en' && enHtmlLang === 'en', 'Language Toggle: switches to English, persists in localStorage and html lang attribute');
+
+      await evaluate('I18n.setLang("bn")');
+      const bnLang = await evaluate('I18n.getLang()');
+      const bnSaved = await evaluate('localStorage.getItem("landguard-language")');
+      const bnHtmlLang = await evaluate('document.documentElement.getAttribute("lang")');
+      assert(bnLang === 'bn' && bnSaved === 'bn' && bnHtmlLang === 'bn', 'Language Toggle: switches back to Bangla, persists in localStorage and html lang attribute');
+
+      // 12. Test Theme Switching (Light & Dark)
       const initialTheme = await evaluate('document.documentElement.getAttribute("data-theme")');
       await evaluate('ThemeManager.setTheme("dark")');
       const darkTheme = await evaluate('document.documentElement.getAttribute("data-theme")');

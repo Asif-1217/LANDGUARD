@@ -6,24 +6,26 @@
   <meta name="description" content="LANDGUARD — Land Conflict Intelligence System. An educational prototype that helps users inspect synthetic land records and understand potential inconsistencies.">
   <title>LANDGUARD — Land Conflict Intelligence System</title>
 
-  <!-- Web Fonts: Inter (primary English interface font) -->
+  <!-- Web Fonts: Hind Siliguri (primary Bangla), Inter (English), Noto Sans Bengali (fallback & numeral clarity) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://fonts.gstatic.com/s/notosansbengali/v33/Cn-fJsCGWQxOjaGwMQ6fIiMywrNJIky6nvd8BjzVMvJx2mc4I3mYvNY.woff2" as="font" type="font/woff2" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/styles.css">
 
   <!-- Favicon: shield emoji as SVG favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
 
-  <!-- Immediate Theme Initialization (Prevents FOUC) -->
+  <!-- Immediate Theme & Language Initialization (Prevents FOUC) -->
   <script>
     (function() {
       try {
         var savedTheme = localStorage.getItem('landguard_theme');
         var theme = savedTheme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
-        document.documentElement.setAttribute('lang', 'en');
+        var savedLang = localStorage.getItem('landguard-language') || 'bn';
+        document.documentElement.setAttribute('lang', savedLang);
       } catch(e) {}
     })();
   </script>
@@ -118,6 +120,12 @@
 
       <div class="header-right">
         <button class="btn btn-sm btn-primary" id="search-btn" data-i18n="searchBtn" aria-label="Search for Plot ID">Search</button>
+
+        <!-- Language Toggle (Bangla / English) -->
+        <div class="lang-toggle-wrap" role="group" aria-label="Language selection">
+          <button type="button" class="lang-pill" id="lang-btn-bn" data-lang="bn" aria-label="বাংলায় পরিবর্তন করুন">BN (বাংলা)</button>
+          <button type="button" class="lang-pill" id="lang-btn-en" data-lang="en" aria-label="Switch to English">EN (English)</button>
+        </div>
 
         <!-- Theme Toggle Button (Light/Dark) -->
         <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" data-theme-toggle aria-label="Toggle color theme" title="Toggle theme">
@@ -247,11 +255,11 @@
               <h2 data-i18n="emptyPlotDetailTitle">Plot Records</h2>
               <p data-i18n="emptyPlotDetailDesc">Search for a Plot ID using the bar above, or select a demo plot below:</p>
               <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
-                <button class="btn btn-outline btn-sm" onclick="loadPlotDetail('PLT-2001')">PLT-2001 (Consistent)</button>
-                <button class="btn btn-primary btn-sm" onclick="loadPlotDetail('PLT-2002')">PLT-2002 (Mismatch)</button>
-                <button class="btn btn-primary btn-sm" onclick="loadPlotDetail('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
-                <button class="btn btn-outline btn-sm" onclick="loadPlotDetail('PLT-2004')">PLT-2004 (Incomplete)</button>
-                <button class="btn btn-sm" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadPlotDetail('PLT-2007')">PLT-2007 (Medium Risk)</button>
+                <button class="btn btn-outline btn-sm" data-scenario-plot="PLT-2001" onclick="loadPlotDetail('PLT-2001')">PLT-2001 (Consistent)</button>
+                <button class="btn btn-primary btn-sm" data-scenario-plot="PLT-2002" onclick="loadPlotDetail('PLT-2002')">PLT-2002 (Mismatch)</button>
+                <button class="btn btn-primary btn-sm" data-scenario-plot="PLT-2003" onclick="loadPlotDetail('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
+                <button class="btn btn-outline btn-sm" data-scenario-plot="PLT-2004" onclick="loadPlotDetail('PLT-2004')">PLT-2004 (Incomplete)</button>
+                <button class="btn btn-sm" data-scenario-plot="PLT-2007" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadPlotDetail('PLT-2007')">PLT-2007 (Medium Risk)</button>
               </div>
               <button class="btn btn-outline" onclick="navigateTo('scenarios')" data-i18n="browseAllScenariosBtn">Browse All Demo Scenarios →</button>
             </div>
@@ -268,11 +276,11 @@
               <h2 data-i18n="emptyReplayTitle">Land Conflict Replay</h2>
               <p data-i18n="emptyReplayDesc">Select a demo plot below to inspect its record comparison and conflict replay:</p>
               <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
-                <button class="btn btn-outline btn-sm" onclick="loadConflictReplay('PLT-2001')">PLT-2001 (Consistent)</button>
-                <button class="btn btn-primary btn-sm" onclick="loadConflictReplay('PLT-2002')">PLT-2002 (Mismatch)</button>
-                <button class="btn btn-primary btn-sm" onclick="loadConflictReplay('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
-                <button class="btn btn-outline btn-sm" onclick="loadConflictReplay('PLT-2004')">PLT-2004 (Incomplete)</button>
-                <button class="btn btn-sm" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadConflictReplay('PLT-2007')">PLT-2007 (Medium Risk)</button>
+                <button class="btn btn-outline btn-sm" data-scenario-plot="PLT-2001" onclick="loadConflictReplay('PLT-2001')">PLT-2001 (Consistent)</button>
+                <button class="btn btn-primary btn-sm" data-scenario-plot="PLT-2002" onclick="loadConflictReplay('PLT-2002')">PLT-2002 (Mismatch)</button>
+                <button class="btn btn-primary btn-sm" data-scenario-plot="PLT-2003" onclick="loadConflictReplay('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
+                <button class="btn btn-outline btn-sm" data-scenario-plot="PLT-2004" onclick="loadConflictReplay('PLT-2004')">PLT-2004 (Incomplete)</button>
+                <button class="btn btn-sm" data-scenario-plot="PLT-2007" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadConflictReplay('PLT-2007')">PLT-2007 (Medium Risk)</button>
               </div>
               <button class="btn btn-outline" onclick="navigateTo('scenarios')" data-i18n="browseAllScenariosBtn">Browse All Demo Scenarios →</button>
             </div>
@@ -289,11 +297,11 @@
               <h2 data-i18n="emptyRiskTitle">Risk Explanation</h2>
               <p data-i18n="emptyRiskDesc">Select a demo plot below to inspect its rule-based risk score breakdown:</p>
               <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
-                <button class="btn btn-outline btn-sm" onclick="loadRiskPanel('PLT-2001')">PLT-2001 (Consistent)</button>
-                <button class="btn btn-primary btn-sm" onclick="loadRiskPanel('PLT-2002')">PLT-2002 (Mismatch)</button>
-                <button class="btn btn-primary btn-sm" onclick="loadRiskPanel('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
-                <button class="btn btn-outline btn-sm" onclick="loadRiskPanel('PLT-2004')">PLT-2004 (Incomplete)</button>
-                <button class="btn btn-sm" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadRiskPanel('PLT-2007')">PLT-2007 (Medium Risk)</button>
+                <button class="btn btn-outline btn-sm" data-scenario-plot="PLT-2001" onclick="loadRiskPanel('PLT-2001')">PLT-2001 (Consistent)</button>
+                <button class="btn btn-primary btn-sm" data-scenario-plot="PLT-2002" onclick="loadRiskPanel('PLT-2002')">PLT-2002 (Mismatch)</button>
+                <button class="btn btn-primary btn-sm" data-scenario-plot="PLT-2003" onclick="loadRiskPanel('PLT-2003')">PLT-2003 (Duplicate Deeds)</button>
+                <button class="btn btn-outline btn-sm" data-scenario-plot="PLT-2004" onclick="loadRiskPanel('PLT-2004')">PLT-2004 (Incomplete)</button>
+                <button class="btn btn-sm" data-scenario-plot="PLT-2007" style="border:1px solid var(--warning);color:var(--warning);" onclick="loadRiskPanel('PLT-2007')">PLT-2007 (Medium Risk)</button>
               </div>
               <button class="btn btn-outline" onclick="navigateTo('scenarios')" data-i18n="browseAllScenariosBtn">Browse All Demo Scenarios →</button>
             </div>
@@ -308,13 +316,13 @@
           <p class="page-subtitle" data-i18n="allRulesRefSub">The complete scoring system — transparent and reproducible</p>
 
           <div class="card">
-            <div class="card-header"><h2 class="card-title">🛡 What is LANDGUARD?</h2></div>
-            <p style="font-size:0.9rem; line-height:1.8; color:var(--text-secondary); margin-bottom:1rem;">
+            <div class="card-header"><h2 class="card-title" data-i18n="aboutWhatIsTitle">🛡 What is LANDGUARD?</h2></div>
+            <p style="font-size:0.9rem; line-height:1.8; color:var(--text-secondary); margin-bottom:1rem;" data-i18n="aboutWhatIsP1">
               LANDGUARD is an <strong>educational hackathon prototype</strong> that simulates a land conflict
               intelligence system. It helps users understand what kinds of inconsistencies can appear in land records,
               and how they might be identified through transparent, rule-based checks.
             </p>
-            <p style="font-size:0.9rem; line-height:1.8; color:var(--text-secondary);">
+            <p style="font-size:0.9rem; line-height:1.8; color:var(--text-secondary);" data-i18n="aboutWhatIsP2">
               The system operates entirely on <strong>synthetic, fictional demo data</strong>. It does not connect
               to any government database, does not access real land records, and does not make legal determinations.
               No real person's information is used or referenced.
@@ -324,9 +332,9 @@
           <div class="card">
             <div class="card-header">
               <h2 class="card-title" data-i18n="allRulesRefTitle">📋 All Rules Reference</h2>
-              <span class="card-subtitle">Transparent &amp; Reproducible — No black-box AI</span>
+              <span class="card-subtitle" data-i18n="allRulesRefSub">Transparent &amp; Reproducible — No black-box AI</span>
             </div>
-            <p style="font-size:0.875rem; margin-bottom:1rem; color:var(--text-secondary);">
+            <p style="font-size:0.875rem; margin-bottom:1rem; color:var(--text-secondary);" data-i18n="allRulesRefIntro">
               Risk scores are calculated by summing the points of all triggered rules.
               Maximum score is 100. Scores are capped if multiple rules would exceed this.
             </p>
@@ -340,10 +348,10 @@
                     <th data-i18n="colRuleName">Rule Name</th>
                     <th data-i18n="colSeverity">Severity</th>
                     <th data-i18n="colPoints">Points</th>
-                    <th>Description</th>
+                    <th data-i18n="colDescription">Description</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="about-rules-tbody">
                   <tr>
                     <td><span class="rule-id-badge rule-id-badge--sm">RULE-01</span></td>
                     <td><strong>Ownership Mismatch</strong></td>
@@ -398,40 +406,40 @@
             </div>
 
             <div style="margin-top:1rem; padding:0.85rem 1.25rem; background:var(--teal-faint); border-radius:var(--radius-md); font-size:0.85rem; color:var(--teal); border: 1px solid var(--border-color);">
-              <strong>Risk Level Thresholds:</strong><br>
-              Score 0 = No Conflict Detected &nbsp;|&nbsp;
+              <strong data-i18n="riskThresholdsTitle">Risk Level Thresholds:</strong><br>
+              <span data-i18n="riskThresholdsBody">Score 0 = No Conflict Detected &nbsp;|&nbsp;
               1–19 = Low Risk &nbsp;|&nbsp;
               20–49 = Medium Risk &nbsp;|&nbsp;
               50–100 = High Risk &nbsp;|&nbsp;
-              RULE-07 only (Incomplete data) = Incomplete Data
+              RULE-07 only (Incomplete data) = Incomplete Data</span>
             </div>
           </div>
 
           <div class="card" style="border-left:4px solid var(--warning);">
-            <div class="card-header"><h2 class="card-title">⚠ What LANDGUARD Cannot Do</h2></div>
+            <div class="card-header"><h2 class="card-title" data-i18n="aboutCannotDoTitle">⚠ What LANDGUARD Cannot Do</h2></div>
             <ul style="font-size:0.875rem; line-height:2; color:var(--text-secondary);">
-              <li>It <strong>cannot</strong> access, query, or verify real government land records.</li>
-              <li>It <strong>cannot</strong> make legally binding ownership determinations.</li>
-              <li>It <strong>cannot</strong> confirm or deny that fraud has occurred.</li>
-              <li>It <strong>cannot</strong> replace advice from a qualified legal professional or licensed surveyor.</li>
-              <li>Results are based <strong>only</strong> on the fictional demo dataset included with this prototype.</li>
+              <li data-i18n="aboutCannotDo1">It <strong>cannot</strong> access, query, or verify real government land records.</li>
+              <li data-i18n="aboutCannotDo2">It <strong>cannot</strong> make legally binding ownership determinations.</li>
+              <li data-i18n="aboutCannotDo3">It <strong>cannot</strong> confirm or deny that fraud has occurred.</li>
+              <li data-i18n="aboutCannotDo4">It <strong>cannot</strong> replace advice from a qualified legal professional or licensed surveyor.</li>
+              <li data-i18n="aboutCannotDo5">Results are based <strong>only</strong> on the fictional demo dataset included with this prototype.</li>
             </ul>
           </div>
 
           <div class="card">
-            <div class="card-header"><h2 class="card-title">🔬 Technology Stack</h2></div>
+            <div class="card-header"><h2 class="card-title" data-i18n="aboutTechTitle">🔬 Technology Stack</h2></div>
             <ul style="font-size:0.875rem; line-height:2; color:var(--text-secondary);">
-              <li><strong>Frontend:</strong> HTML5, CSS3 (Custom Design Tokens, Light/Dark Modes), Vanilla JavaScript ES6+</li>
-              <li><strong>Language:</strong> English-only interface with centralized translation dictionary</li>
-              <li><strong>Data:</strong> Local synthetic JavaScript records representing land conflict patterns</li>
-              <li><strong>Backend:</strong> None required — 100% transparent client-side evaluation engine</li>
-              <li><strong>Dependencies:</strong> Zero external frameworks or paid APIs — runs locally in any modern browser</li>
+              <li data-i18n="aboutTech1"><strong>Frontend:</strong> HTML5, CSS3 (Custom Design Tokens, Light/Dark Modes), Vanilla JavaScript ES6+</li>
+              <li data-i18n="aboutTech2"><strong>Language &amp; Localization:</strong> Full bilingual (Bangla &amp; English) support with high-quality typography</li>
+              <li data-i18n="aboutTech3"><strong>Data:</strong> Local synthetic JavaScript records representing land conflict patterns</li>
+              <li data-i18n="aboutTech4"><strong>Backend:</strong> None required — 100% transparent client-side evaluation engine</li>
+              <li data-i18n="aboutTech5"><strong>Dependencies:</strong> Zero external frameworks or paid APIs — runs locally in any modern browser</li>
             </ul>
           </div>
 
           <div class="card">
-            <div class="card-header"><h2 class="card-title">🎓 Hackathon Context</h2></div>
-            <p style="font-size:0.875rem; line-height:1.8; color:var(--text-secondary);">
+            <div class="card-header"><h2 class="card-title" data-i18n="aboutHackathonTitle">🎓 Hackathon Context</h2></div>
+            <p style="font-size:0.875rem; line-height:1.8; color:var(--text-secondary);" data-i18n="aboutHackathonP1">
               LANDGUARD was built as a prototype for the <strong>Land Technology Innovation Hackathon</strong>.
               It demonstrates how transparent, rule-based logic can surface potential inconsistencies
               in land record datasets, and how a responsible, explainable approach can be taken
@@ -466,7 +474,7 @@
 <!-- Mobile nav and footer year patch -->
 <script>
   // Footer years
-  document.querySelectorAll('#footer-year, #disclaimer-year').forEach(el => el.textContent = new Date().getFullYear());
+  document.querySelectorAll('#footer-year, #disclaimer-year').forEach(el => el.textContent = typeof I18n !== 'undefined' ? I18n.formatNumber(new Date().getFullYear()) : new Date().getFullYear());
 
   // Mobile sidebar toggle
   const menuBtn = document.getElementById('mobile-menu-btn');

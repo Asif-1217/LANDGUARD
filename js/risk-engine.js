@@ -108,6 +108,22 @@ const RiskEngine = (() => {
     return isNaN(d.getTime()) ? null : d;
   }
 
+  const MISSING_FIELDS_BN = {
+    "Linked mutation for DEED-8802": "DEED-8802-এর সংশ্লিষ্ট নামজারি",
+    "Deed reference for MUT-5502": "MUT-5502-এর দলিলের তথ্যসূত্র",
+    "Deed reference for MUT-6603 mutation chain": "MUT-6603 নামজারি শৃঙ্খলের দলিলের তথ্যসূত্র",
+    "Prior ownership evidence for DEED-9902": "DEED-9902-এর পূর্ববর্তী মালিকানার প্রমাণ",
+    "Plot area / survey dimensions": "জমির পরিমাণ / জরিপ পরিমাপ",
+    "Mutation records": "নামজারি রেকর্ড",
+    "Consideration amount": "দলিলের মূল্য",
+    "Witness information": "সাক্ষীর তথ্য",
+    "Verification status of existing deed": "বিদ্যমান দলিলের যাচাইকরণ অবস্থা",
+    "Linked mutation for DEED-5501": "DEED-5501-এর সংশ্লিষ্ট নামজারি",
+    "Deed reference for MUT-8806": "MUT-8806-এর দলিলের তথ্যসূত্র",
+    "Deed reference for 2016 internal transfer (TXF-011)": "২০১৬ সালের অভ্যন্তরীণ হস্তান্তরের (TXF-011) দলিলের তথ্যসূত্র",
+    "Mutation reference for 2016 internal transfer (TXF-011)": "২০১৬ সালের অভ্যন্তরীণ হস্তান্তরের (TXF-011) নামজারির তথ্যসূত্র"
+  };
+
   // ──────────────────────────────────────────────────────────────
   // MAIN ANALYSIS FUNCTION
   // ──────────────────────────────────────────────────────────────
@@ -131,9 +147,11 @@ const RiskEngine = (() => {
         evidence.push({
           rule: "RULE-01",
           field: "Registered Owner",
+          fieldBn: "নিবন্ধিত মালিক",
           deedValue: activeDeed.registeredOwner,
           mutationValue: latestMutation.recordedOwner,
-          detail: `Deed ${activeDeed.deedId} lists owner as "${activeDeed.registeredOwner}", but mutation ${latestMutation.mutationId} records owner as "${latestMutation.recordedOwner}".`
+          detail: `Deed ${activeDeed.deedId} lists owner as "${activeDeed.registeredOwner}", but mutation ${latestMutation.mutationId} records owner as "${latestMutation.recordedOwner}".`,
+          detailBn: `${activeDeed.deedId} দলিলে মালিক হিসেবে '${activeDeed.registeredOwner}'-এর নাম রয়েছে, কিন্তু ${latestMutation.mutationId} নামজারি রেকর্ডে মালিক হিসেবে '${latestMutation.recordedOwner}'-এর নাম উল্লেখ করা হয়েছে।`
         });
       }
     }
@@ -146,7 +164,9 @@ const RiskEngine = (() => {
       evidence.push({
         rule: "RULE-02",
         field: "Deed Status",
+        fieldBn: "দলিলের অবস্থা",
         detail: `Found ${activeDeeds.length} deeds with Active status: ${activeDeeds.map(d => d.deedId).join(", ")}. Each claims ownership of the same plot.`,
+        detailBn: `${activeDeeds.length}টি দলিলের সক্রিয় (Active) অবস্থা পাওয়া গেছে: ${activeDeeds.map(d => d.deedId).join(", ")}। প্রতিটি দলিলই একই প্লটের পূর্ণ মালিকানা দাবি করছে।`,
         affectedDeeds: activeDeeds.map(d => ({ id: d.deedId, owner: d.registeredOwner, date: d.registrationDate }))
       });
     }
@@ -158,7 +178,9 @@ const RiskEngine = (() => {
       evidence.push({
         rule: "RULE-03",
         field: "Mutation Records",
-        detail: "No mutation record found for this plot. Administrative mutation is typically expected after a deed transfer."
+        fieldBn: "নামজারি রেকর্ড",
+        detail: "No mutation record found for this plot. Administrative mutation is typically expected after a deed transfer.",
+        detailBn: "এই প্লটের জন্য কোনো নামজারি রেকর্ড পাওয়া যায়নি। দলিল হস্তান্তরের পর সাধারণ নিয়মে প্রশাসনিক নামজারি প্রত্যাশিত।"
       });
     }
 
@@ -176,7 +198,9 @@ const RiskEngine = (() => {
       evidence.push({
         rule: "RULE-04",
         field: "Transfer Cross-References",
-        detail: `${affected.length} transfer record(s) lack complete deed/mutation cross-references: ${affected.map(t => t.transferId).join(", ")}.`
+        fieldBn: "হস্তান্তরের তথ্যসূত্র",
+        detail: `${affected.length} transfer record(s) lack complete deed/mutation cross-references: ${affected.map(t => t.transferId).join(", ")}.`,
+        detailBn: `${affected.length}টি হস্তান্তর রেকর্ডে দলিল ও নামজারির সম্পূর্ণ পারস্পরিক তথ্যসূত্র নেই: ${affected.map(t => t.transferId).join(", ")}।`
       });
     }
 
@@ -190,12 +214,15 @@ const RiskEngine = (() => {
       evidence.push({
         rule: "RULE-05",
         field: "Deed Verification Status",
-        detail: `Deed(s) with non-Verified status: ${unverifiedDeeds.map(d => `${d.deedId} (${d.verificationStatus})`).join(", ")}.`
+        fieldBn: "দলিল যাচাইকরণ অবস্থা",
+        detail: `Deed(s) with non-Verified status: ${unverifiedDeeds.map(d => `${d.deedId} (${d.verificationStatus})`).join(", ")}.`,
+        detailBn: `অযাচাইকৃত দলিলের তালিকা: ${unverifiedDeeds.map(d => `${d.deedId} (${d.verificationStatus === 'Pending Review' ? 'পর্যালোচনাধীন' : d.verificationStatus === 'Unverified' ? 'অযাচাইকৃত' : d.verificationStatus})`).join(", ")}।`
       });
     }
 
     // ── RULE-06: Chronological Inconsistency ───────────────────
     let chronoIssues = [];
+    let chronoIssuesBn = [];
     plot.transferHistory.forEach(t => {
       if (t.deedRef) {
         const deed = plot.deeds.find(d => d.deedId === t.deedRef);
@@ -204,6 +231,7 @@ const RiskEngine = (() => {
           const transferDate = parseDate(t.date);
           if (deedDate && transferDate && transferDate < deedDate) {
             chronoIssues.push(`Transfer ${t.transferId} (${t.date}) predates its referenced deed ${deed.deedId} (${deed.registrationDate}).`);
+            chronoIssuesBn.push(`${t.transferId} হস্তান্তরের তারিখ (${t.date}) সংশ্লিষ্ট ${deed.deedId} দলিলের রেজিস্ট্রেশন তারিখের (${deed.registrationDate}) পূর্ববর্তী।`);
           }
         }
       }
@@ -224,7 +252,9 @@ const RiskEngine = (() => {
       evidence.push({
         rule: "RULE-06",
         field: "Transfer Chronology",
-        detail: chronoIssues.join(" | ")
+        fieldBn: "হস্তান্তর কালানুক্রম",
+        detail: chronoIssues.join(" | "),
+        detailBn: chronoIssuesBn.join(" | ")
       });
     }
 
@@ -234,10 +264,13 @@ const RiskEngine = (() => {
       const fieldPoints = Math.min(missingCount * RULES["RULE-07"].points, 20);
       score += fieldPoints;
       triggeredRules.push("RULE-07");
+      const missingBn = plot.missingFields.map(f => MISSING_FIELDS_BN[f] || f);
       evidence.push({
         rule: "RULE-07",
         field: "Data Completeness",
+        fieldBn: "তথ্যের পূর্ণাঙ্গতা",
         detail: `${missingCount} critical field(s) missing: ${plot.missingFields.join("; ")}.`,
+        detailBn: `${missingCount}টি গুরুত্বপূর্ণ তথ্য অনুপস্থিত: ${missingBn.join("; ")}।`,
         pointsAdded: fieldPoints
       });
     }
@@ -246,6 +279,7 @@ const RiskEngine = (() => {
     score = Math.min(score, 100);
 
     // ── DETERMINE RISK LEVEL ────────────────────────────────────
+    let riskLevel = "No Conflict Detected";
     if (plot.dataCompleteness === "Incomplete" && triggeredRules.includes("RULE-07") && !triggeredRules.some(r => ["RULE-01","RULE-02","RULE-06"].includes(r))) {
       riskLevel = "Incomplete Data";
     } else if (plot.riskLevel === "Low") {
@@ -265,6 +299,10 @@ const RiskEngine = (() => {
       ? plot.missingFields
       : ["No critical fields missing in demo data"];
 
+    const missingInfoBn = plot.missingFields.length > 0
+      ? plot.missingFields.map(f => MISSING_FIELDS_BN[f] || f)
+      : ["ডেমো তথ্যে কোনো গুরুত্বপূর্ণ ক্ষেত্র অনুপস্থিত নেই"];
+
     // ── RECOMMENDED NEXT STEPS ─────────────────────────────────
     const nextSteps = buildNextSteps(triggeredRules, riskLevel);
     const nextStepsBn = buildNextStepsBn(triggeredRules, riskLevel);
@@ -277,6 +315,7 @@ const RiskEngine = (() => {
       triggeredRules,
       evidence,
       missingInfo,
+      missingInfoBn,
       nextSteps,
       nextStepsBn,
       rulesDetail: triggeredRules.map(id => RULES[id]),

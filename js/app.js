@@ -41,6 +41,16 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAllStaticText();
     reRenderActiveView();
   });
+
+  // Ensure Bengali fonts are fully loaded before final layout calculation
+  if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      document.documentElement.classList.add("fonts-ready");
+      if (typeof I18n !== "undefined" && I18n.getLang() === "bn") {
+        reRenderActiveView();
+      }
+    });
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -107,14 +117,28 @@ function renderAllStaticText() {
   document.querySelectorAll("#footer-year, #disclaimer-year").forEach(el => {
     el.textContent = I18n.formatNumber(new Date().getFullYear());
   });
+
+  // Localize empty-state scenario buttons
+  const isBn = I18n.getLang() === "bn";
+  document.querySelectorAll("[data-scenario-plot]").forEach(btn => {
+    const pid = btn.getAttribute("data-scenario-plot");
+    if (pid === "PLT-2001") btn.textContent = isBn ? "PLT-2001 (সামঞ্জস্যপূর্ণ)" : "PLT-2001 (Consistent)";
+    else if (pid === "PLT-2002") btn.textContent = isBn ? "PLT-2002 (মালিকানার অমিল)" : "PLT-2002 (Mismatch)";
+    else if (pid === "PLT-2003") btn.textContent = isBn ? "PLT-2003 (দ্বৈত দলিল)" : "PLT-2003 (Duplicate Deeds)";
+    else if (pid === "PLT-2004") btn.textContent = isBn ? "PLT-2004 (অসম্পূর্ণ)" : "PLT-2004 (Incomplete)";
+    else if (pid === "PLT-2007") btn.textContent = isBn ? "PLT-2007 (মাঝারি ঝুঁকি)" : "PLT-2007 (Medium Risk)";
+  });
+
+  // Dynamically render About page rules in active language
+  renderAboutRules();
 }
 
 function reRenderActiveView() {
   populateScenarioCards();
+  renderAboutRules();
+  renderDashboard();
 
-  if (App.currentPage === "dashboard") {
-    renderDashboard();
-  } else if (App.currentPage === "plot-detail" && App.currentPlot) {
+  if (App.currentPage === "plot-detail" && App.currentPlot) {
     loadPlotDetail(App.currentPlot.plotId);
   } else if (App.currentPage === "conflict-replay" && App.currentPlot) {
     loadConflictReplay(App.currentPlot.plotId);
@@ -282,10 +306,10 @@ function renderDashboardCharts(stats) {
   });
 
   const luLabels = {
-    Residential: I18n.getLang() === "bn" ? "আবাসিক (Residential)" : "Residential",
-    MixedUse: I18n.getLang() === "bn" ? "মিশ্র ব্যবহার (Mixed Use)" : "Mixed Use",
-    Commercial: I18n.getLang() === "bn" ? "বাণিজ্যিক (Commercial)" : "Commercial",
-    Agricultural: I18n.getLang() === "bn" ? "কৃষি (Agricultural)" : "Agricultural"
+    Residential: I18n.getLang() === "bn" ? "আবাসিক" : "Residential",
+    MixedUse: I18n.getLang() === "bn" ? "মিশ্র ব্যবহার" : "Mixed Use",
+    Commercial: I18n.getLang() === "bn" ? "বাণিজ্যিক" : "Commercial",
+    Agricultural: I18n.getLang() === "bn" ? "কৃষি" : "Agricultural"
   };
 
   container.innerHTML = `
@@ -390,7 +414,7 @@ function renderRecentCases(cases) {
       <div class="case-id">
         <span class="plot-badge">${c.plotId}</span>
       </div>
-      <div class="case-location">${c.location}</div>
+      <div class="case-location">${I18n.translateLocation(c.location)}</div>
       <div class="case-scenario">${translateScenarioLabel(c.scenarioLabel)}</div>
       <div class="case-risk">
         <span class="risk-badge risk-${riskClass(c.riskLevel)}">${translateRiskLevel(c.riskLevel)}</span>
@@ -431,7 +455,7 @@ function initSearch() {
         `<div class="suggestion-item" tabindex="0" role="option"
               onclick="selectSuggestion('${p.plotId}')"
               onkeydown="if(event.key==='Enter'){selectSuggestion('${p.plotId}')}">
-          <strong>${p.plotId}</strong> — ${p.location}
+          <strong>${p.plotId}</strong> — ${I18n.translateLocation(p.location)}
         </div>`
       ).join("");
     });
@@ -520,7 +544,7 @@ function renderPlotHeader(plot, analysis) {
           <span> / ${I18n.t("navPlotDetail")}</span>
         </div>
         <h1 class="plot-title">${plot.plotId}</h1>
-        <p class="plot-subtitle">${plot.location}</p>
+        <p class="plot-subtitle">${I18n.translateLocation(plot.location)}</p>
       </div>
       <div class="plot-header-right">
         <div class="risk-summary-badge risk-${riskClass(analysis.riskLevel)}">
@@ -534,6 +558,13 @@ function renderPlotHeader(plot, analysis) {
 }
 
 function renderPlotOverview(plot) {
+  const isBn = I18n.getLang() === "bn";
+  const loc = I18n.translateLocation(plot.location);
+  const area = plot.area ? I18n.translateArea(plot.area) : `<em class='missing'>${isBn ? 'রেকর্ড নেই' : 'Not recorded'}</em>`;
+  const owner = I18n.translateOwner(plot.currentOwner);
+  const desc = I18n.translatePlotDescription(plot.plotId, plot.description);
+  const missing = (plot.missingFields || []).map(f => I18n.translateMissingField(f));
+
   return `
     <div class="card">
       <div class="card-header">
@@ -542,25 +573,26 @@ function renderPlotOverview(plot) {
       </div>
       <div class="info-grid">
         ${infoRow(I18n.t("fieldPlotId"), plot.plotId)}
-        ${infoRow(I18n.t("fieldLocation"), plot.location)}
-        ${infoRow(I18n.t("fieldArea"), plot.area ? I18n.formatNumber(plot.area) : `<em class='missing'>${I18n.getLang() === 'bn' ? 'রেকর্ড নেই' : 'Not recorded'}</em>`)}
+        ${infoRow(I18n.t("fieldLocation"), loc)}
+        ${infoRow(I18n.t("fieldArea"), area)}
         ${infoRow(I18n.t("fieldLandUse"), translateLandUse(plot.landUse))}
         ${infoRow(I18n.t("fieldRegDate"), I18n.formatDate(plot.registrationDate))}
-        ${infoRow(I18n.t("fieldCurrentOwner"), plot.currentOwner)}
+        ${infoRow(I18n.t("fieldCurrentOwner"), owner)}
         ${infoRow(I18n.t("fieldCompleteness"), `<span class="completeness-badge completeness-${plot.dataCompleteness.toLowerCase().replace(" ","-")}">${translateCompleteness(plot.dataCompleteness)}</span>`)}
         ${infoRow(I18n.t("fieldScenario"), translateScenarioLabel(plot.scenarioLabel))}
       </div>
-      ${plot.description ? `<p class="plot-description">${plot.description}</p>` : ""}
-      ${plot.missingFields.length > 0 ? `
+      ${desc ? `<p class="plot-description">${desc}</p>` : ""}
+      ${missing.length > 0 ? `
         <div class="missing-fields-box">
           <strong>⚠ ${I18n.t("missingFieldsAlert")}</strong>
-          <ul>${plot.missingFields.map(f => `<li>${f}</li>`).join("")}</ul>
+          <ul>${missing.map(f => `<li>${f}</li>`).join("")}</ul>
         </div>` : ""}
     </div>
   `;
 }
 
 function renderDeedRecords(plot) {
+  const isBn = I18n.getLang() === "bn";
   if (plot.deeds.length === 0) {
     return `<div class="card"><div class="card-header"><h2 class="card-title">${I18n.t("deedRecordsTitle")}</h2></div>
       <div class="empty-state-inline">${I18n.t("noDeedsFound")}</div></div>`;
@@ -572,15 +604,15 @@ function renderDeedRecords(plot) {
         <span class="record-id">${d.deedId}</span>
         <span class="deed-status-badge deed-${d.status.toLowerCase().replace(" ","-")}">${translateStatus(d.status)}</span>
         ${d.status === 'Active' && plot.deeds.filter(x=>x.status==='Active').length > 1
-          ? `<span class="conflict-flag" title="Multiple active deeds detected">⚠ ${I18n.getLang() === 'bn' ? 'দ্বৈত সক্রিয় দলিল' : 'Duplicate Active Deed'}</span>` : ''}
+          ? `<span class="conflict-flag" title="Multiple active deeds detected">⚠ ${isBn ? 'দ্বৈত সক্রিয় দলিল' : 'Duplicate Active Deed'}</span>` : ''}
       </div>
       <div class="info-grid">
         ${infoRow(I18n.t("fieldCurrentOwner"), `<strong>${escapeHtml(d.registeredOwner)}</strong>`)}
-        ${infoRow(I18n.t("fieldDeedType"), d.deedType)}
+        ${infoRow(I18n.t("fieldDeedType"), I18n.translateDeedType(d.deedType))}
         ${infoRow(I18n.t("fieldRegDate"), I18n.formatDate(d.registrationDate))}
-        ${infoRow(I18n.t("fieldDeedOffice"), d.registrationOffice)}
-        ${infoRow(I18n.t("fieldConsideration"), d.considerationAmount ? I18n.formatCurrency(d.considerationAmount) : `<em class="missing">${I18n.getLang() === 'bn' ? 'রেকর্ড নেই' : 'Not recorded'}</em>`)}
-        ${infoRow(I18n.t("fieldWitness"), d.witnessName || `<em class="missing">${I18n.getLang() === 'bn' ? 'রেকর্ড নেই' : 'Not recorded'}</em>`)}
+        ${infoRow(I18n.t("fieldDeedOffice"), I18n.translateDeedOffice(d.registrationOffice))}
+        ${infoRow(I18n.t("fieldConsideration"), d.considerationAmount ? I18n.formatCurrency(d.considerationAmount) : `<em class="missing">${isBn ? 'রেকর্ড নেই' : 'Not recorded'}</em>`)}
+        ${infoRow(I18n.t("fieldWitness"), d.witnessName || `<em class="missing">${isBn ? 'রেকর্ড নেই' : 'Not recorded'}</em>`)}
         ${infoRow(I18n.t("fieldVerification"), `<span class="verify-badge verify-${(d.verificationStatus||'').toLowerCase().replace(" ","-")}">${translateVerification(d.verificationStatus)}</span>`)}
       </div>
     </div>
@@ -597,6 +629,7 @@ function renderDeedRecords(plot) {
 }
 
 function renderMutationRecords(plot) {
+  const isBn = I18n.getLang() === "bn";
   if (plot.mutations.length === 0) {
     return `<div class="card">
       <div class="card-header"><h2 class="card-title">${I18n.t("mutationRecordsTitle")}</h2></div>
@@ -614,10 +647,10 @@ function renderMutationRecords(plot) {
       </div>
       <div class="info-grid">
         ${infoRow(I18n.t("fieldRecordedOwner"), `<strong>${escapeHtml(m.recordedOwner)}</strong>`)}
-        ${infoRow(I18n.t("fieldPreviousOwner"), escapeHtml(m.previousOwner || (I18n.getLang() === 'bn' ? 'রেকর্ড নেই' : 'Not recorded')))}
+        ${infoRow(I18n.t("fieldPreviousOwner"), escapeHtml(m.previousOwner || (isBn ? 'রেকর্ড নেই' : 'Not recorded')))}
         ${infoRow(I18n.t("fieldMutationDate"), I18n.formatDate(m.mutationDate))}
-        ${infoRow(I18n.t("fieldMutationReason"), m.mutationReason)}
-        ${infoRow(I18n.t("fieldApprovedBy"), escapeHtml(m.approvedBy || (I18n.getLang() === 'bn' ? 'রেকর্ড নেই' : 'Not recorded')))}
+        ${infoRow(I18n.t("fieldMutationReason"), I18n.translateMutationReason(m.mutationReason))}
+        ${infoRow(I18n.t("fieldApprovedBy"), escapeHtml(I18n.translateApprovedBy(m.approvedBy) || (isBn ? 'রেকর্ড নেই' : 'Not recorded')))}
         ${infoRow(I18n.t("fieldMutationStatus"), translateStatus(m.status))}
       </div>
     </div>
@@ -634,6 +667,7 @@ function renderMutationRecords(plot) {
 }
 
 function renderTransferHistory(plot) {
+  const isBn = I18n.getLang() === "bn";
   if (plot.transferHistory.length === 0) {
     return `<div class="card"><div class="card-header"><h2 class="card-title">${I18n.t("transferHistoryTitle")}</h2></div>
       <div class="empty-state-inline">${I18n.t("noTransfersFound")}</div></div>`;
@@ -646,18 +680,18 @@ function renderTransferHistory(plot) {
         <div class="timeline-header">
           <span class="timeline-id">${t.transferId}</span>
           <span class="timeline-date">${I18n.formatDate(t.date)}</span>
-          <span class="transfer-type-badge">${t.transferType}</span>
+          <span class="transfer-type-badge">${I18n.translateTransferType(t.transferType)}</span>
         </div>
         <div class="timeline-parties">
-          <span class="from-owner">${t.fromOwner || `<em>${I18n.getLang() === 'bn' ? 'রেকর্ড নেই' : 'Not recorded'}</em>`}</span>
+          <span class="from-owner">${t.fromOwner ? I18n.translateOwner(t.fromOwner) : `<em>${isBn ? 'রেকর্ড নেই' : 'Not recorded'}</em>`}</span>
           <span class="arrow" aria-hidden="true"> → </span>
-          <span class="to-owner"><strong>${t.toOwner}</strong></span>
+          <span class="to-owner"><strong>${escapeHtml(t.toOwner)}</strong></span>
         </div>
         <div class="timeline-refs">
-          ${t.deedRef ? `<span class="ref-badge ref-deed">${I18n.getLang() === 'bn' ? 'দলিল' : 'Deed'}: ${t.deedRef}</span>` : `<span class="ref-badge ref-missing">${I18n.getLang() === 'bn' ? 'দলিল রেফারেন্স অনুপস্থিত' : 'No deed reference'}</span>`}
-          ${t.mutationRef ? `<span class="ref-badge ref-mutation">${I18n.getLang() === 'bn' ? 'নামজারি' : 'Mutation'}: ${t.mutationRef}</span>` : `<span class="ref-badge ref-missing">${I18n.getLang() === 'bn' ? 'নামজারি রেফারেন্স অনুপস্থিত' : 'No mutation ref'}</span>`}
+          ${t.deedRef ? `<span class="ref-badge ref-deed">${isBn ? 'দলিল' : 'Deed'}: ${t.deedRef}</span>` : `<span class="ref-badge ref-missing">${isBn ? 'দলিলের তথ্যসূত্র অনুপস্থিত' : 'No deed reference'}</span>`}
+          ${t.mutationRef ? `<span class="ref-badge ref-mutation">${isBn ? 'নামজারি' : 'Mutation'}: ${t.mutationRef}</span>` : `<span class="ref-badge ref-missing">${isBn ? 'নামজারির তথ্যসূত্র অনুপস্থিত' : 'No mutation ref'}</span>`}
         </div>
-        ${t.notes ? `<p class="timeline-notes">${escapeHtml(t.notes)}</p>` : ""}
+        ${t.notes ? `<p class="timeline-notes">${escapeHtml(I18n.translateTransferNote(t.notes, t.transferId))}</p>` : ""}
       </div>
     </div>
   `).join("");
@@ -696,7 +730,7 @@ function loadConflictReplay(plotId) {
           <span> / ${I18n.t("navConflictReplay")}</span>
         </div>
         <h1>${I18n.t("conflictReplayTitle")} — ${plot.plotId}</h1>
-        <p class="subtitle">${plot.location}</p>
+        <p class="subtitle">${I18n.translateLocation(plot.location)}</p>
       </div>
       <div class="risk-summary-badge risk-${riskClass(analysis.riskLevel)} risk-badge-lg">
         <div class="risk-label">${I18n.t("scoreGaugeLabel")}</div>
@@ -851,36 +885,42 @@ function renderOwnerComparisonTable(plot, analysis) {
 }
 
 function renderConflictTimeline(plot, analysis) {
+  const isBn = I18n.getLang() === "bn";
   const events = [];
 
   plot.deeds.forEach(d => {
+    const deedType = I18n.translateDeedType(d.deedType);
+    const office = I18n.translateDeedOffice(d.registrationOffice);
     events.push({
       date: d.registrationDate,
       type: "deed",
-      label: `${I18n.getLang() === 'bn' ? 'দলিল রেজিস্ট্রেশন' : 'Deed Registered'}: ${d.deedId}`,
-      detail: `${I18n.getLang() === 'bn' ? 'মালিক' : 'Owner'}: ${d.registeredOwner} | ${d.deedType} | ${d.registrationOffice}`,
+      label: `${isBn ? 'দলিল রেজিস্ট্রেশন' : 'Deed Registered'}: ${d.deedId}`,
+      detail: `${isBn ? 'মালিক' : 'Owner'}: ${d.registeredOwner} | ${deedType} | ${office}`,
       status: d.status,
       conflict: analysis.evidence.some(e => e.rule === "RULE-02") && d.status === "Active" && plot.deeds.filter(x=>x.status==="Active").length > 1
     });
   });
 
   plot.mutations.forEach(m => {
+    const reason = I18n.translateMutationReason(m.mutationReason);
+    const approved = I18n.translateApprovedBy(m.approvedBy);
     events.push({
       date: m.mutationDate,
       type: "mutation",
-      label: `${I18n.getLang() === 'bn' ? 'নামজারি সম্পন্ন' : 'Mutation Recorded'}: ${m.mutationId}`,
-      detail: `${I18n.getLang() === 'bn' ? 'মালিক' : 'Owner'}: ${m.recordedOwner} | ${m.mutationReason} | ${m.approvedBy}`,
+      label: `${isBn ? 'নামজারি সম্পন্ন' : 'Mutation Recorded'}: ${m.mutationId}`,
+      detail: `${isBn ? 'মালিক' : 'Owner'}: ${m.recordedOwner} | ${reason} | ${approved}`,
       status: m.status,
       conflict: analysis.evidence.some(e => e.rule === "RULE-01")
     });
   });
 
   plot.encumbrances.forEach(enc => {
+    const encTr = I18n.translateEncumbrance(enc);
     events.push({
       date: enc.raisedDate,
       type: "encumbrance",
-      label: `${I18n.getLang() === 'bn' ? 'দায় বা বিরোধ সতর্কতা' : 'Encumbrance'}: ${enc.type}`,
-      detail: `${enc.raisedBy} | ${enc.notes}`,
+      label: `${isBn ? 'দায় বা বিরোধ সতর্কতা' : 'Encumbrance'}: ${encTr.type}`,
+      detail: `${encTr.raisedBy} | ${encTr.notes}`,
       status: "Alert",
       conflict: true
     });
@@ -894,8 +934,8 @@ function renderConflictTimeline(plot, analysis) {
       <div class="rtp-content">
         <div class="rtp-header">
           <span class="rtp-date">${I18n.formatDate(ev.date)}</span>
-          <span class="rtp-type-badge rtp-type-${ev.type}">${ev.type.toUpperCase()}</span>
-          ${ev.conflict ? `<span class="conflict-marker" title="Potential conflict indicator">⚠ ${I18n.getLang() === 'bn' ? 'অসংগতি সূচক' : 'Conflict Indicator'}</span>` : ''}
+          <span class="rtp-type-badge rtp-type-${ev.type}">${isBn ? (ev.type === 'deed' ? 'দলিল' : ev.type === 'mutation' ? 'নামজারি' : 'সতর্কতা') : ev.type.toUpperCase()}</span>
+          ${ev.conflict ? `<span class="conflict-marker" title="Potential conflict indicator">⚠ ${isBn ? 'অসংগতি সূচক' : 'Conflict Indicator'}</span>` : ''}
         </div>
         <div class="rtp-label">${ev.label}</div>
         <div class="rtp-detail">${ev.detail}</div>
@@ -916,12 +956,29 @@ function renderConflictTimeline(plot, analysis) {
 }
 
 function renderTriggeredRules(analysis) {
+  const isBn = I18n.getLang() === "bn";
   if (analysis.triggeredRules.length === 0) {
+    const passedChecks = isBn ? [
+      { title: "মালিকানা সামঞ্জস্যতা", desc: "দলিলের নিবন্ধিত ক্রেতা/মালিকের নামের সাথে নামজারি রেকর্ডের মালিকের নাম সম্পূর্ণ মিলে গেছে।" },
+      { title: "একক সক্রিয় দলিল", desc: "এই প্লটের বিপরীতে শুধুমাত্র একটি কার্যকর দলিল নিবন্ধিত রয়েছে (কোনো দ্বৈত দলিল নেই)।" },
+      { title: "নামজারি খতিয়ান অনুমোদন", desc: "রাজস্ব কর্তৃপক্ষ কর্তৃক নামজারি জমা-খারিজ আনুষ্ঠানিকভাবে অনুমোদিত ও হালনাগাদ।" },
+      { title: "হস্তান্তর ইতিহাসের ধারাবাহিকতা", desc: "ঐতিহাসিক হস্তান্তরের সমস্ত রেকর্ডে দলিল ও নামজারির স্পষ্ট যোগসূত্র সংরক্ষিত আছে।" },
+      { title: "তথ্যের পূর্ণাঙ্গতা", desc: "জমির পরিমাণ, সাব-রেজিস্ট্রি অফিস এবং দলিলের মূল্যের মতো আবশ্যক ক্ষেত্রসমূহ সম্পূর্ণ।" },
+      { title: "কালানুক্রমিক সঠিকতা", desc: "মালিকানা হস্তান্তর ও রেজিস্ট্রেশনের তারিখসমূহ সঠিক কালানুক্রমিক ধারাবাহিকতা মেনে চলেছে।" }
+    ] : [
+      { title: "Owner Consistency", desc: "Deed registered owner matches mutation recorded owner without discrepancy." },
+      { title: "Active Deed Singularity", desc: "Only one active deed is registered for this parcel (no duplicate active deeds detected)." },
+      { title: "Mutation Record Approval", desc: "Mutation is officially approved by the relevant land revenue authority." },
+      { title: "Transfer History Linkage", desc: "All historical transfer records have verified deed and mutation cross-references." },
+      { title: "Data Completeness", desc: "Critical attributes including plot area, registration office, and consideration amount are complete." },
+      { title: "Chronological Validity", desc: "Historical transfers and deed registration dates follow a valid chronological sequence." }
+    ];
+
     return `
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">${I18n.t("allClearTitle")} (6/6 Passed)</h2>
-          <span class="status-badge status-active">ALL CHECKS PASSED</span>
+          <h2 class="card-title">${I18n.t("allClearTitle")} (${I18n.formatNumber(6)}/${I18n.formatNumber(6)} ${isBn ? 'উত্তীর্ণ' : 'Passed'})</h2>
+          <span class="status-badge status-active">${isBn ? 'সকল পরীক্ষায় উত্তীর্ণ' : 'ALL CHECKS PASSED'}</span>
         </div>
         <div class="all-clear" style="margin-bottom: 1rem;">
           <span class="all-clear-icon" aria-hidden="true">✓</span>
@@ -930,58 +987,40 @@ function renderTriggeredRules(analysis) {
           </p>
         </div>
         <div class="passed-checks-list" style="display: grid; gap: 0.6rem; margin-top: 0.75rem;">
-          <div class="passed-check-item" style="display:flex; align-items:flex-start; gap:0.6rem; padding: 0.65rem 0.85rem; background: var(--bg-muted); border-radius: var(--radius-sm); border-left: 3px solid var(--risk-clear);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span>
-            <div><strong>Owner Consistency:</strong> Deed registered owner matches mutation recorded owner without discrepancy.</div>
-          </div>
-          <div class="passed-check-item" style="display:flex; align-items:flex-start; gap:0.6rem; padding: 0.65rem 0.85rem; background: var(--bg-muted); border-radius: var(--radius-sm); border-left: 3px solid var(--risk-clear);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span>
-            <div><strong>Active Deed Singularity:</strong> Only one active deed is registered for this parcel (no duplicate active deeds detected).</div>
-          </div>
-          <div class="passed-check-item" style="display:flex; align-items:flex-start; gap:0.6rem; padding: 0.65rem 0.85rem; background: var(--bg-muted); border-radius: var(--radius-sm); border-left: 3px solid var(--risk-clear);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span>
-            <div><strong>Mutation Record Approval:</strong> Mutation is officially approved by the relevant land revenue authority.</div>
-          </div>
-          <div class="passed-check-item" style="display:flex; align-items:flex-start; gap:0.6rem; padding: 0.65rem 0.85rem; background: var(--bg-muted); border-radius: var(--radius-sm); border-left: 3px solid var(--risk-clear);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span>
-            <div><strong>Transfer History Linkage:</strong> All historical transfer records have verified deed and mutation cross-references.</div>
-          </div>
-          <div class="passed-check-item" style="display:flex; align-items:flex-start; gap:0.6rem; padding: 0.65rem 0.85rem; background: var(--bg-muted); border-radius: var(--radius-sm); border-left: 3px solid var(--risk-clear);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span>
-            <div><strong>Data Completeness:</strong> Critical attributes including plot area, registration office, and consideration amount are complete.</div>
-          </div>
-          <div class="passed-check-item" style="display:flex; align-items:flex-start; gap:0.6rem; padding: 0.65rem 0.85rem; background: var(--bg-muted); border-radius: var(--radius-sm); border-left: 3px solid var(--risk-clear);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span>
-            <div><strong>Chronological Validity:</strong> Historical transfers and deed registration dates follow a valid chronological sequence.</div>
-          </div>
+          ${passedChecks.map(c => `
+            <div class="passed-check-item" style="display:flex; align-items:flex-start; gap:0.6rem; padding: 0.65rem 0.85rem; background: var(--bg-muted); border-radius: var(--radius-sm); border-left: 3px solid var(--risk-clear);">
+              <span style="color: var(--risk-clear); font-weight: 700;">✓</span>
+              <div><strong>${c.title}:</strong> ${c.desc}</div>
+            </div>
+          `).join("")}
         </div>
         <div class="all-clear-note" style="margin-top: 1rem; padding: 0.75rem 1rem; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.88rem; color: var(--text-secondary);">
-          <strong>Note:</strong> ${I18n.t("allClearNote")}
+          <strong>${isBn ? 'সতর্কতা:' : 'Note:'}</strong> ${I18n.t("allClearNote")}
         </div>
       </div>
     `;
   }
-
-  const isBn = I18n.getLang() === "bn";
 
   const ruleCards = analysis.evidence.map(ev => {
     const rule = RiskEngine.RULES[ev.rule];
     const ruleName = isBn && rule.nameBn ? rule.nameBn : rule.name;
     const ruleDesc = isBn && rule.descriptionBn ? rule.descriptionBn : rule.description;
     const points = ev.rule === "RULE-07" ? (ev.pointsAdded || rule.points) : rule.points;
+    const detail = isBn && ev.detailBn ? ev.detailBn : I18n.translateEvidenceDetail(ev);
+    const sev = I18n.translateSeverity(rule.severity);
 
     return `
       <div class="rule-card rule-card--${rule.severity.toLowerCase()}">
         <div class="rule-card-header">
           <span class="rule-id-badge">${rule.id}</span>
           <span class="rule-name">${ruleName}</span>
-          <span class="rule-severity rule-severity--${rule.severity.toLowerCase()}">${rule.severity}</span>
-          <span class="rule-points">+${I18n.formatNumber(points)} ${isBn ? 'পয়েন্ট' : 'pts'}</span>
+          <span class="rule-severity rule-severity--${rule.severity.toLowerCase()}">${sev}</span>
+          <span class="rule-points">+${I18n.formatNumber(points)} ${isBn ? 'স্কোর' : 'pts'}</span>
         </div>
         <p class="rule-description">${ruleDesc}</p>
         <div class="rule-evidence">
-          <strong>${isBn ? 'পর্যবেক্ষিত প্রমাণ (Evidence):' : 'Evidence from demo data:'}</strong>
-          <p>${escapeHtml(ev.detail)}</p>
+          <strong>${isBn ? 'পর্যবেক্ষিত প্রমাণ:' : 'Evidence from demo data:'}</strong>
+          <p>${escapeHtml(detail)}</p>
           ${ev.deedValue ? `<div class="evidence-row"><span class="evidence-label">${isBn ? 'দলিল রেকর্ডে:' : 'Deed record shows:'}</span> <span class="evidence-value evidence-conflict">${escapeHtml(ev.deedValue)}</span></div>` : ""}
           ${ev.mutationValue ? `<div class="evidence-row"><span class="evidence-label">${isBn ? 'নামজারি রেকর্ডে:' : 'Mutation record shows:'}</span> <span class="evidence-value evidence-conflict">${escapeHtml(ev.mutationValue)}</span></div>` : ""}
         </div>
@@ -1023,7 +1062,7 @@ function renderRelationshipGraph(plot) {
     return `
       <div class="graph-node ${name === "Unknown / Not Recorded" ? 'graph-node--unknown' : ''} ${isConflicted ? 'graph-node--conflict' : ''}">
         <div class="graph-node-icon" aria-hidden="true">👤</div>
-        <div class="graph-node-name">${escapeHtml(name)}</div>
+        <div class="graph-node-name">${escapeHtml(I18n.translateOwner(name))}</div>
       </div>
     `;
   }).join('<div class="graph-arrow" aria-hidden="true">→</div>');
@@ -1106,14 +1145,14 @@ function renderRiskSummaryCard(analysis, plot) {
         </div>
       </div>
       <div class="risk-summary-meta">
-        <span>${I18n.t("fieldCurrentOwner")}: <strong>${plot ? escapeHtml(plot.currentOwner) : ""}</strong></span>
+        <span>${I18n.t("fieldCurrentOwner")}: <strong>${plot ? escapeHtml(I18n.translateOwner(plot.currentOwner)) : ""}</strong></span>
         <span>${I18n.t("fieldCompleteness")}: <strong>${translateCompleteness(analysis.dataCompleteness)}</strong></span>
         <span>${I18n.t("rulesTriggeredTitle")}: <strong>${I18n.formatNumber(analysis.triggeredRules.length)}</strong></span>
         <span>${I18n.t("fieldPlotId")}: <strong>${analysis.plotId}</strong></span>
       </div>
       ${plot && plot.description ? `
         <div class="risk-explanation-summary" style="margin-top:1rem;padding-top:0.85rem;border-top:1px solid var(--border-color);font-size:0.95rem;line-height:1.5;">
-          <strong style="color:var(--text-primary);">${I18n.t("assessmentSummaryLabel")}:</strong> ${escapeHtml(plot.description)}
+          <strong style="color:var(--text-primary);">${I18n.t("assessmentSummaryLabel")}:</strong> ${escapeHtml(I18n.translatePlotDescription(plot.plotId, plot.description))}
         </div>
       ` : ""}
     </div>
@@ -1121,59 +1160,62 @@ function renderRiskSummaryCard(analysis, plot) {
 }
 
 function renderScoreBreakdown(analysis) {
+  const isBn = I18n.getLang() === "bn";
+
   if (analysis.triggeredRules.length === 0) {
+    const passedList = isBn ? [
+      "RULE-01 যাচাই: মালিকানা রেকর্ডের সামঞ্জস্যতা (উত্তীর্ণ — দলিল ও নামজারি মালিকের নাম মিলেছে)",
+      "RULE-02 যাচাই: একক সক্রিয় দলিল বৈধতা (উত্তীর্ণ — ঠিক একটি সক্রিয় দলিল বিদ্যমান)",
+      "RULE-03 যাচাই: নামজারি রেকর্ডের উপস্থিতি (উত্তীর্ণ — অনুমোদিত নামজারি সংরক্ষিত)",
+      "RULE-04 যাচাই: হস্তান্তর শৃঙ্খল ক্রস-রেফারেন্স (উত্তীর্ণ — সকল হস্তান্তর সম্পূর্ণ সংযুক্ত)",
+      "RULE-05 যাচাই: দলিল যাচাইকরণ অবস্থা (উত্তীর্ণ — সরকারি স্ট্যাটাস যাচাইকৃত)",
+      "RULE-06 যাচাই: কালানুক্রমিক সময়ক্রম (উত্তীর্ণ — সময়রেখার ধারাবাহিকতা সঠিক)",
+      "RULE-07 যাচাই: গুরুত্বপূর্ণ তথ্যের পূর্ণাঙ্গতা (উত্তীর্ণ — কোনো তথ্যক্ষেত্র অনুপস্থিত নেই)"
+    ] : [
+      "Checked RULE-01: Ownership record consistency (Passed — Deed and mutation owners match)",
+      "Checked RULE-02: Single active deed validation (Passed — Exactly one active deed)",
+      "Checked RULE-03: Mutation record existence (Passed — Approved mutation present)",
+      "Checked RULE-04: Ownership transfer cross-references (Passed — All transfers fully linked)",
+      "Checked RULE-05: Deed verification status (Passed — Official status Verified)",
+      "Checked RULE-06: Chronological event ordering (Passed — Timestamps sequential)",
+      "Checked RULE-07: Critical fields & data completeness (Passed — 0 missing fields)"
+    ];
+
     return `
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">${I18n.t("scoreBreakdownTitle")}</h2>
-          <span class="status-badge status-active">0 Points (Clear)</span>
+          <span class="status-badge status-active">${isBn ? '০ পয়েন্ট (ঝুঁকিমুক্ত)' : '0 Points (Clear)'}</span>
         </div>
         <p style="margin-bottom:0.75rem; color:var(--text-secondary);">
           ${I18n.t("allClearDesc")} ${I18n.t("scoreGaugeLabel")}: <strong>${I18n.formatNumber(0)} / ${I18n.formatNumber(100)}</strong>.
         </p>
         <div class="passed-checks-list" style="display: grid; gap: 0.5rem; margin-top: 0.75rem;">
-          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span> Checked RULE-01: Ownership record consistency (Passed — Deed and mutation owners match)
-          </div>
-          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span> Checked RULE-02: Single active deed validation (Passed — Exactly one active deed)
-          </div>
-          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span> Checked RULE-03: Mutation record existence (Passed — Approved mutation present)
-          </div>
-          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span> Checked RULE-04: Ownership transfer cross-references (Passed — All transfers fully linked)
-          </div>
-          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span> Checked RULE-05: Deed verification status (Passed — Official status Verified)
-          </div>
-          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span> Checked RULE-06: Chronological event ordering (Passed — Timestamps sequential)
-          </div>
-          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
-            <span style="color: var(--risk-clear); font-weight: 700;">✓</span> Checked RULE-07: Critical fields & data completeness (Passed — 0 missing fields)
-          </div>
+          ${passedList.map(text => `
+            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
+              <span style="color: var(--risk-clear); font-weight: 700;">✓</span> ${text}
+            </div>
+          `).join("")}
         </div>
         <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.88rem; color: var(--text-secondary);">
-          <strong>Note:</strong> ${I18n.t("allClearNote")}
+          <strong>${isBn ? 'সতর্কতা:' : 'Note:'}</strong> ${I18n.t("allClearNote")}
         </div>
       </div>
     `;
   }
 
-  const isBn = I18n.getLang() === "bn";
-
   const rows = analysis.evidence.map(ev => {
     const rule = RiskEngine.RULES[ev.rule];
     const ruleName = isBn && rule.nameBn ? rule.nameBn : rule.name;
     const pts = ev.rule === "RULE-07" ? (ev.pointsAdded || rule.points) : rule.points;
+    const detailText = isBn && ev.detailBn ? ev.detailBn : I18n.translateEvidenceDetail(ev);
     return `
       <tr>
         <td><span class="rule-id-badge rule-id-badge--sm">${rule.id}</span></td>
         <td>${ruleName}</td>
-        <td><span class="severity-badge severity-${rule.severity.toLowerCase()}">${rule.severity}</span></td>
+        <td><span class="severity-badge severity-${rule.severity.toLowerCase()}">${I18n.translateSeverity(rule.severity)}</span></td>
         <td class="points-cell">+${I18n.formatNumber(pts)}</td>
-        <td class="evidence-cell">${escapeHtml(ev.detail.substring(0, 120))}${ev.detail.length > 120 ? "…" : ""}</td>
+        <td class="evidence-cell">${escapeHtml(detailText.substring(0, 120))}${detailText.length > 120 ? "…" : ""}</td>
       </tr>
     `;
   }).join("");
@@ -1207,11 +1249,16 @@ function renderScoreBreakdown(analysis) {
 }
 
 function renderMissingInfo(analysis) {
+  const isBn = I18n.getLang() === "bn";
+  const items = isBn && analysis.missingInfoBn
+    ? analysis.missingInfoBn
+    : (analysis.missingInfo || []).map(m => I18n.translateMissingField(m));
+
   return `
     <div class="card">
       <div class="card-header"><h2 class="card-title">${I18n.t("missingInfoTitle")}</h2></div>
       <ul class="missing-list">
-        ${analysis.missingInfo.map(m => `<li>${escapeHtml(m)}</li>`).join("")}
+        ${items.map(m => `<li>${escapeHtml(m)}</li>`).join("")}
       </ul>
     </div>
   `;
@@ -1247,7 +1294,7 @@ function renderAllRulesReference() {
       <tr>
         <td><span class="rule-id-badge rule-id-badge--sm">${r.id}</span></td>
         <td><strong>${name}</strong></td>
-        <td><span class="severity-badge severity-${r.severity.toLowerCase()}">${r.severity}</span></td>
+        <td><span class="severity-badge severity-${r.severity.toLowerCase()}">${I18n.translateSeverity(r.severity)}</span></td>
         <td class="points-cell">${pts}</td>
         <td>${desc}</td>
       </tr>
@@ -1268,7 +1315,7 @@ function renderAllRulesReference() {
               <th>${I18n.t("colRuleName")}</th>
               <th>${I18n.t("colSeverity")}</th>
               <th>${I18n.t("colPoints")}</th>
-              <th>${I18n.t("colEvidence")}</th>
+              <th>${I18n.t("colDescription")}</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -1276,6 +1323,29 @@ function renderAllRulesReference() {
       </div>
     </div>
   `;
+}
+
+function renderAboutRules() {
+  const tbody = document.getElementById("about-rules-tbody");
+  if (!tbody || typeof RiskEngine === "undefined") return;
+  const isBn = I18n.getLang() === "bn";
+  const rules = RiskEngine.getAllRules();
+  tbody.innerHTML = rules.map(r => {
+    const name = isBn && r.nameBn ? r.nameBn : r.name;
+    const desc = isBn && r.descriptionBn ? r.descriptionBn : r.description;
+    const pts = r.id === "RULE-07"
+      ? (isBn ? "+৫/ক্ষেত্র (সর্বোচ্চ ২০)" : "+5/field (max 20)")
+      : "+" + I18n.formatNumber(r.points);
+    return `
+      <tr>
+        <td><span class="rule-id-badge rule-id-badge--sm">${r.id}</span></td>
+        <td><strong>${name}</strong></td>
+        <td><span class="severity-badge severity-${r.severity.toLowerCase()}">${I18n.translateSeverity(r.severity)}</span></td>
+        <td class="points-cell">${pts}</td>
+        <td style="font-size:0.82rem">${desc}</td>
+      </tr>
+    `;
+  }).join("");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1368,10 +1438,10 @@ function initScenarioButtons() {
 // TRANSLATION HELPERS FOR DYNAMIC ATTRIBUTES
 // ─────────────────────────────────────────────────────────────────────────────
 function translateRiskLevel(level) {
-  if (level === "Low" || level === "No Conflict Detected") return "Low Risk";
-  if (level === "Medium") return "Medium Risk";
-  if (level === "High") return "High Risk";
-  if (level === "Incomplete Data") return "Incomplete Data";
+  if (level === "Low" || level === "No Conflict Detected") return I18n.t("riskLow");
+  if (level === "Medium") return I18n.t("riskMedium");
+  if (level === "High") return I18n.t("riskHigh");
+  if (level === "Incomplete Data") return I18n.t("riskIncomplete");
   return level;
 }
 
@@ -1427,10 +1497,12 @@ function translateScenarioLabel(label) {
   const isBn = I18n.getLang() === "bn";
   if (!isBn || !label) return label;
   switch (label) {
+    case "Consistent Ownership Records":
     case "Consistent Records": return "সামঞ্জস্যপূর্ণ রেকর্ড";
     case "Ownership Mismatch": return "মালিকানা নামের গরমিল";
     case "Duplicate Active Deeds": return "দ্বৈত সক্রিয় দলিল";
     case "Incomplete Records": return "অসম্পূর্ণ রেকর্ড";
+    case "Medium Risk — Incomplete Ownership History": return "মাঝারি ঝুঁকি — অসম্পূর্ণ হস্তান্তরের ইতিহাস";
     default: return label;
   }
 }

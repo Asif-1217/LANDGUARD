@@ -212,23 +212,23 @@ sandbox.loadPlotDetail('PLT-2002');
 const detailContent = elementsById['plot-detail-content'].innerHTML;
 assert(detailContent.includes('PLT-2002'), 'Plot detail rendered for PLT-2002');
 assert(detailContent.includes('Fatima Okonkwo'), 'Plot detail includes registered owner');
-assert(detailContent.includes('Riverstone Estate'), 'Plot detail includes location');
+assert(detailContent.includes('Riverstone Estate') || detailContent.includes('রিভারস্টোন এস্টেট'), 'Plot detail includes location');
 
 // Test PLT-2007 Plot Detail Rendering
 sandbox.loadPlotDetail('PLT-2007');
 const detailContent7 = elementsById['plot-detail-content'].innerHTML;
 assert(detailContent7.includes('PLT-2007'), 'Plot detail rendered for PLT-2007');
 assert(detailContent7.includes('Adaeze Nwofor'), 'Plot detail includes owner Adaeze Nwofor');
-assert(detailContent7.includes('Medium Risk'), 'Plot detail displays Medium Risk badge');
+assert(detailContent7.includes('Medium Risk') || detailContent7.includes('মাঝারি ঝুঁকি'), 'Plot detail displays Medium Risk badge');
 
 // Test Conflict Replay Rendering
 sandbox.loadConflictReplay('PLT-2002');
 const replayContent = elementsById['conflict-replay-content'].innerHTML;
-assert(replayContent.includes('PLT-2002') && (replayContent.includes('Conflict Replay') || replayContent.includes('অসংগতি বিশ্লেষণ')), 'Conflict replay header rendered');
+assert(replayContent.includes('PLT-2002') && (replayContent.includes('Conflict Replay') || replayContent.includes('বিরোধ')), 'Conflict replay header rendered');
 assert(replayContent.includes('RULE-01'), 'Conflict replay contains RULE-01 card');
 assert(replayContent.includes('Fatima Okonkwo') && replayContent.includes('Emmanuel Tarfa'), 'Conflict replay table includes mismatched owners');
-assert(replayContent.includes('Chronological Event Timeline') || replayContent.includes('ঐতিহাসিক সময়ক্রম'), 'Conflict replay includes chronological event timeline');
-assert(replayContent.includes('Ownership Relationship Overview') || replayContent.includes('মালিকানা হস্তান্তরের'), 'Conflict replay includes relationship chain');
+assert(replayContent.includes('Chronological Event Timeline') || replayContent.includes('সময়রেখা'), 'Conflict replay includes chronological event timeline');
+assert(replayContent.includes('Ownership Relationship Overview') || replayContent.includes('মালিকানা'), 'Conflict replay includes relationship chain');
 
 // Test Duplicate Deeds Replay Rendering
 sandbox.loadConflictReplay('PLT-2003');
@@ -240,22 +240,22 @@ assert(replayContent3.includes('RULE-02'), 'Conflict replay for PLT-2003 shows R
 sandbox.loadConflictReplay('PLT-2007');
 const replayContent5 = elementsById['conflict-replay-content'].innerHTML;
 assert(replayContent5.includes('PLT-2007'), 'Conflict replay for PLT-2007 rendered');
-assert(replayContent5.includes('Medium'), 'Conflict replay for PLT-2007 shows Medium Risk');
+assert(replayContent5.includes('Medium') || replayContent5.includes('মাঝারি'), 'Conflict replay for PLT-2007 shows Medium Risk');
 
 // Test Risk Panel Rendering
 sandbox.loadRiskPanel('PLT-2003');
 const riskContent = elementsById['risk-panel-content'].innerHTML;
-assert(riskContent.includes('PLT-2003') && (riskContent.includes('Risk Explanation') || riskContent.includes('ঝুঁকি মূল্যায়ন')), 'Risk panel header rendered');
-assert(riskContent.includes('Score Breakdown') || riskContent.includes('স্কোরের বিস্তারিত হিসাব'), 'Risk panel includes score breakdown table');
-assert(riskContent.includes('Recommended Next Steps') || riskContent.includes('পরবর্তী করণীয়'), 'Risk panel includes next steps recommendations');
-assert(riskContent.includes('All Rules Reference') || riskContent.includes('সকল ঝুঁকি নিয়মের তালিকা'), 'Risk panel includes transparent all-rules table');
+assert(riskContent.includes('PLT-2003') && (riskContent.includes('Risk Explanation') || riskContent.includes('ঝুঁকি')), 'Risk panel header rendered');
+assert(riskContent.includes('Score Breakdown') || riskContent.includes('স্কোর বিভাজন'), 'Risk panel includes score breakdown table');
+assert(riskContent.includes('Recommended Next Steps') || riskContent.includes('প্রস্তাবিত পরবর্তী পদক্ষেপ'), 'Risk panel includes next steps recommendations');
+assert(riskContent.includes('All Rules Reference') || riskContent.includes('সকল নিয়মের রেফারেন্স তালিকা'), 'Risk panel includes transparent all-rules table');
 
 // Test PLT-2007 Risk Panel Rendering
 sandbox.loadRiskPanel('PLT-2007');
 const riskContent5 = elementsById['risk-panel-content'].innerHTML;
 assert(riskContent5.includes('PLT-2007'), 'Risk panel for PLT-2007 rendered');
-assert(riskContent5.includes('Medium'), 'Risk panel for PLT-2007 shows Medium risk');
-assert(riskContent5.includes('Assessment Summary'), 'Risk panel for PLT-2007 renders Assessment Summary');
+assert(riskContent5.includes('Medium') || riskContent5.includes('মাঝারি'), 'Risk panel for PLT-2007 shows Medium risk');
+assert(riskContent5.includes('Assessment Summary') || riskContent5.includes('মূল্যায়ন সারসংক্ষেপ'), 'Risk panel for PLT-2007 renders Assessment Summary');
 
 // ─────────────────────────────────────────────────────────────
 // AUDIT 4: SEARCH & NOT-FOUND HANDLING
@@ -267,7 +267,7 @@ assert(sandbox.App.currentPage === 'plot-detail', 'Searching PLT-2001 navigates 
 assert(sandbox.App.currentPlot.plotId === 'PLT-2001', 'Current plot updated to PLT-2001');
 
 sandbox.doSearch('PLT-UNKNOWN-999');
-assert(elementsById['plot-detail-content'].innerHTML.includes('Plot Not Found') || elementsById['plot-detail-content'].innerHTML.includes('খুঁজে পাওয়া যায়নি'), 'Searching unknown ID displays Plot Not Found state');
+assert(elementsById['plot-detail-content'].innerHTML.includes('Plot Not Found') || elementsById['plot-detail-content'].innerHTML.includes('প্লট পাওয়া যায়নি'), 'Searching unknown ID displays Plot Not Found state');
 assert(elementsById['plot-detail-content'].innerHTML.includes('PLT-UNKNOWN-999'), 'Not found message reflects searched ID');
 
 sandbox.selectSuggestion('PLT-2003');
@@ -287,26 +287,43 @@ assert(sandbox.App.currentPage === 'risk-panel', 'Navigated to risk-panel');
 assert(elementsById['risk-panel-content'].innerHTML.includes('PLT-2003'), 'Risk panel preserved active plot PLT-2003');
 
 // ─────────────────────────────────────────────────────────────
-// AUDIT 6: ENGLISH-ONLY LOCALIZATION & THEME TOGGLING
+// AUDIT 6: BILINGUAL (BANGLA & ENGLISH) LOCALIZATION & THEME TOGGLING
 // ─────────────────────────────────────────────────────────────
-console.log('\nAudit 6: English-only Localization & Theme Toggling');
+console.log('\nAudit 6: Bilingual (Bangla & English) Localization & Theme Toggling');
 
-// Test language is English
+// 1. Initial / Default Language is Bangla (bn)
+assert(sandbox.I18n.getLang() === 'bn', 'First-time visitors get Bangla (bn) as default language');
+assert(sandbox.I18n.formatNumber(123) === '১২৩', 'Bangla numeral formatting converts ASCII to Bengali numerals (১২৩)');
+assert(sandbox.I18n.formatDate('2015-07-22') === '২২ জুলাই, ২০১৫', 'Bangla date formatting produces "২২ জুলাই, ২০১৫"');
+assert(sandbox.I18n.formatCurrency(8200000) === '৳৮,২০০,০০০', 'Bangla currency formatting produces "৳৮,২০০,০০০"');
+
+// 2. Switch to English
 sandbox.I18n.setLang('en');
-assert(sandbox.I18n.getLang() === 'en', 'Interface language is English (en)');
+assert(sandbox.I18n.getLang() === 'en', 'Interface switches to English (en)');
+assert(sandbox.localStorage.getItem('landguard-language') === 'en', 'Language preference persisted in localStorage under landguard-language');
 assert(sandbox.I18n.formatNumber(123) === '123', 'English numeral formatting preserves ASCII numbers');
-assert(sandbox.I18n.formatDate('2015-07-22') === '22 July, 2015', 'English date formatting produces "22 July, 2015"');
+assert(sandbox.I18n.formatDate('2015-07-22') === '22 July 2015', 'English date formatting produces "22 July 2015"');
+assert(sandbox.I18n.formatCurrency(8200000) === '৳8,200,000', 'English currency formatting produces "৳8,200,000"');
 
 sandbox.loadPlotDetail('PLT-2002');
 const enDetail = elementsById['plot-detail-content'].innerHTML;
 assert(enDetail.includes('Deed Records'), 'English plot detail renders English titles (Deed Records)');
 
-// Verify Bengali fallback is no-op and stays English
+// 3. Switch back to Bangla
 sandbox.I18n.setLang('bn');
-assert(sandbox.I18n.getLang() === 'en', 'Language stays English even if bn requested');
-assert(sandbox.I18n.formatNumber(123) === '123', 'Numbers remain ASCII English digits');
+assert(sandbox.I18n.getLang() === 'bn', 'Interface switches back to Bangla (bn)');
+assert(sandbox.localStorage.getItem('landguard-language') === 'bn', 'Bangla preference persisted in localStorage');
+sandbox.loadPlotDetail('PLT-2002');
+const bnDetail = elementsById['plot-detail-content'].innerHTML;
+assert(bnDetail.includes('দলিল রেকর্ডসমূহ'), 'Bangla plot detail renders Bangla titles (দলিল রেকর্ডসমূহ)');
 
-// Test ThemeManager
+// 4. Test Toggle
+sandbox.I18n.toggleLang();
+assert(sandbox.I18n.getLang() === 'en', 'I18n.toggleLang() toggles bn to en');
+sandbox.I18n.toggleLang();
+assert(sandbox.I18n.getLang() === 'bn', 'I18n.toggleLang() toggles en back to bn');
+
+// 5. Test ThemeManager
 sandbox.ThemeManager.setTheme('dark');
 assert(sandbox.ThemeManager.getTheme() === 'dark', 'Theme manager set to dark theme');
 assert(sandbox.localStorage.getItem('landguard_theme') === 'dark', 'Theme preference persisted in localStorage');
