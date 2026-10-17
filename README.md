@@ -77,19 +77,23 @@ LANDGUARD demonstrates:
 
 ## Screenshots
 
-> **To add screenshots:** Run the project (see below), open it in your browser, take screenshots, and save them in a `screenshots/` folder.
+### Main Dashboard
+![Main Dashboard](screenshots/dashboard.png)
 
-| Page | Description |
-|---|---|
-| `screenshots/dashboard.png` | Main dashboard with metrics, risk distribution chart, and recent cases |
-| `screenshots/dashboard-dark.png` | Dark mode dashboard showing high-contrast LandTech theme |
-| `screenshots/conflict-replay-plt2002.png` | Conflict Replay for PLT-2002 (ownership mismatch comparison) |
-| `screenshots/conflict-replay-plt2003.png` | Conflict Replay for PLT-2003 (duplicate active deeds) |
-| `screenshots/conflict-replay-plt2007.png` | Conflict Replay for PLT-2007 (medium risk incomplete history) |
-| `screenshots/risk-panel.png` | Risk Explanation panel with score breakdown and next steps |
-| `screenshots/scenarios.png` | Demo Scenarios overview page |
+### Conflict Replay - PLT-2002
+![Conflict Replay PLT-2002](screenshots/conflict-replay-plt2002.png)
 
----
+### Conflict Replay - PLT-2003
+![Conflict Replay PLT-2003](screenshots/conflict-replay-plt2003.png)
+
+### Conflict Replay - PLT-2007
+![Conflict Replay PLT-2007](screenshots/conflict-replay-plt2007.png)
+
+### Risk Explanation Panel
+![Risk Explanation Panel](screenshots/risk-panel.png)
+
+### Demo Scenarios
+![Demo Scenarios](screenshots/scenarios.png)
 
 ## Technology Stack
 
