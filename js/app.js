@@ -233,11 +233,11 @@ function renderQuickScenarioStrip() {
   if (!container) return;
 
   const quickScenarios = [
-    { id: "scenario-1", plotId: "PLT-2001", icon: "✅", title: I18n.t("scenario1Title"), tag: I18n.t("riskLow") },
-    { id: "scenario-5", plotId: "PLT-2007", icon: "🟠", title: I18n.t("scenario5Title"), tag: I18n.t("riskMedium") },
-    { id: "scenario-2", plotId: "PLT-2002", icon: "⚠️", title: I18n.t("scenario2Title"), tag: I18n.t("riskHigh") },
-    { id: "scenario-3", plotId: "PLT-2003", icon: "🔴", title: I18n.t("scenario3Title"), tag: I18n.t("riskHigh") },
-    { id: "scenario-4", plotId: "PLT-2004", icon: "⚪", title: I18n.t("scenario4Title"), tag: I18n.t("riskIncomplete") }
+    { id: "scenario-1", plotId: "PLT-2001", statusClass: "clear", title: I18n.t("scenario1Title"), tag: I18n.t("riskLow") },
+    { id: "scenario-5", plotId: "PLT-2007", statusClass: "medium", title: I18n.t("scenario5Title"), tag: I18n.t("riskMedium") },
+    { id: "scenario-2", plotId: "PLT-2002", statusClass: "high", title: I18n.t("scenario2Title"), tag: I18n.t("riskHigh") },
+    { id: "scenario-3", plotId: "PLT-2003", statusClass: "high", title: I18n.t("scenario3Title"), tag: I18n.t("riskHigh") },
+    { id: "scenario-4", plotId: "PLT-2004", statusClass: "incomplete", title: I18n.t("scenario4Title"), tag: I18n.t("riskIncomplete") }
   ];
 
   container.innerHTML = quickScenarios.map(qs => {
@@ -247,7 +247,7 @@ function renderQuickScenarioStrip() {
               onclick="navigateTo('conflict-replay', '${qs.plotId}')"
               aria-label="Inspect ${qs.title}">
         <div class="qs-title">
-          <span>${qs.icon}</span>
+          <span class="qs-status-indicator qs-status--${qs.statusClass}" aria-hidden="true"></span>
           <span>${qs.plotId}</span>
           ${isActive ? `<span class="prototype-badge" style="font-size:0.65rem;padding:1px 5px;">${I18n.t("activeScenarioBadge")}</span>` : ''}
         </div>
@@ -496,7 +496,9 @@ function showNotFound(id) {
   if (!container) return;
   container.innerHTML = `
     <div class="empty-state">
-      <div class="empty-icon" aria-hidden="true">🔍</div>
+      <div class="empty-icon" aria-hidden="true">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
       <h2>${I18n.t("plotNotFoundTitle")}</h2>
       <p>${I18n.t("plotNotFoundDesc")} <strong>${escapeHtml(id)}</strong></p>
       <p>${I18n.t("plotNotFoundSuggestions")} <strong>PLT-2001, PLT-2002, PLT-2003, PLT-2004, PLT-2005, PLT-2006, PLT-2007</strong></p>
@@ -584,7 +586,10 @@ function renderPlotOverview(plot) {
       ${desc ? `<p class="plot-description">${desc}</p>` : ""}
       ${missing.length > 0 ? `
         <div class="missing-fields-box">
-          <strong>⚠ ${I18n.t("missingFieldsAlert")}</strong>
+          <strong style="display:flex; align-items:center; gap:0.4rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--risk-high)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            ${I18n.t("missingFieldsAlert")}
+          </strong>
           <ul>${missing.map(f => `<li>${f}</li>`).join("")}</ul>
         </div>` : ""}
     </div>
@@ -604,7 +609,7 @@ function renderDeedRecords(plot) {
         <span class="record-id">${d.deedId}</span>
         <span class="deed-status-badge deed-${d.status.toLowerCase().replace(" ","-")}">${translateStatus(d.status)}</span>
         ${d.status === 'Active' && plot.deeds.filter(x=>x.status==='Active').length > 1
-          ? `<span class="conflict-flag" title="Multiple active deeds detected">⚠ ${isBn ? 'দ্বৈত সক্রিয় দলিল' : 'Duplicate Active Deed'}</span>` : ''}
+          ? `<span class="conflict-flag" title="Multiple active deeds detected" style="display:inline-flex; align-items:center; gap:0.3rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${isBn ? 'দ্বৈত সক্রিয় দলিল' : 'Duplicate Active Deed'}</span>` : ''}
       </div>
       <div class="info-grid">
         ${infoRow(I18n.t("fieldCurrentOwner"), `<strong>${escapeHtml(d.registeredOwner)}</strong>`)}
@@ -634,7 +639,10 @@ function renderMutationRecords(plot) {
     return `<div class="card">
       <div class="card-header"><h2 class="card-title">${I18n.t("mutationRecordsTitle")}</h2></div>
       <div class="missing-fields-box">
-        <strong>⚠ ${I18n.t("noMutationsFound")}</strong>
+        <strong style="display:flex; align-items:center; gap:0.4rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--risk-high)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          ${I18n.t("noMutationsFound")}
+        </strong>
       </div>
     </div>`;
   }
@@ -801,10 +809,10 @@ function renderOwnerComparisonTable(plot, analysis) {
       </td>
       <td>
         ${ownerMismatch
-          ? `<span class="mismatch-indicator">⚠ ${I18n.getLang() === 'bn' ? 'মালিকানা নামের গরমিল (RULE-01)' : 'Names differ — RULE-01'}</span>`
+          ? `<span class="mismatch-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${I18n.getLang() === 'bn' ? 'মালিকানা নামের গরমিল (RULE-01)' : 'Names differ — RULE-01'}</span>`
           : deedOwner && mutOwner
-            ? `<span class="match-indicator">✓ ${I18n.getLang() === 'bn' ? 'মালিকের নাম মিল রয়েছে' : 'Names match'}</span>`
-            : `<span class="incomplete-indicator">⚪ ${I18n.t("riskIncomplete")}</span>`}
+            ? `<span class="match-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> ${I18n.getLang() === 'bn' ? 'মালিকের নাম মিল রয়েছে' : 'Names match'}</span>`
+            : `<span class="incomplete-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> ${I18n.t("riskIncomplete")}</span>`}
       </td>
     </tr>
   `;
@@ -817,8 +825,8 @@ function renderOwnerComparisonTable(plot, analysis) {
       </td>
       <td>
         ${dupDeedEvidence
-          ? `<span class="mismatch-indicator">⚠ ${I18n.getLang() === 'bn' ? 'দ্বৈত সক্রিয় দলিল শনাক্ত' : 'Duplicate active deeds'}</span>`
-          : `<span class="match-indicator">✓ ${I18n.getLang() === 'bn' ? 'একক সক্রিয় দলিল' : 'Single active deed'}</span>`}
+          ? `<span class="mismatch-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${I18n.getLang() === 'bn' ? 'দ্বৈত সক্রিয় দলিল শনাক্ত' : 'Duplicate active deeds'}</span>`
+          : `<span class="match-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> ${I18n.getLang() === 'bn' ? 'একক সক্রিয় দলিল' : 'Single active deed'}</span>`}
       </td>
     </tr>
   `;
@@ -833,8 +841,8 @@ function renderOwnerComparisonTable(plot, analysis) {
       </td>
       <td>
         ${plot.mutations.length === 0
-          ? `<span class="mismatch-indicator">⚠ ${I18n.getLang() === 'bn' ? 'নামজারি খতিয়ান অনুপস্থিত' : 'Missing mutation'}</span>`
-          : `<span class="match-indicator">✓ ${I18n.getLang() === 'bn' ? 'নথিভুক্ত আছে' : 'Present'}</span>`}
+          ? `<span class="mismatch-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${I18n.getLang() === 'bn' ? 'নামজারি খতিয়ান অনুপস্থিত' : 'Missing mutation'}</span>`
+          : `<span class="match-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> ${I18n.getLang() === 'bn' ? 'নথিভুক্ত আছে' : 'Present'}</span>`}
       </td>
     </tr>
   `;
@@ -847,8 +855,8 @@ function renderOwnerComparisonTable(plot, analysis) {
       </td>
       <td>
         ${plot.deeds.some(d => d.verificationStatus !== "Verified")
-          ? `<span class="mismatch-indicator">⚠ ${I18n.getLang() === 'bn' ? 'অযাচাইকৃত দলিল বিদ্যমান' : 'Unverified deed(s)'}</span>`
-          : `<span class="match-indicator">✓ ${I18n.getLang() === 'bn' ? 'সকল দলিল যাচাইকৃত' : 'All verified'}</span>`}
+          ? `<span class="mismatch-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${I18n.getLang() === 'bn' ? 'অযাচাইকৃত দলিল বিদ্যমান' : 'Unverified deed(s)'}</span>`
+          : `<span class="match-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> ${I18n.getLang() === 'bn' ? 'সকল দলিল যাচাইকৃত' : 'All verified'}</span>`}
       </td>
     </tr>
   `;
@@ -874,11 +882,17 @@ function renderOwnerComparisonTable(plot, analysis) {
       </div>
       ${ownerMismatch ? `
         <div class="conflict-callout conflict-callout--high">
-          <strong>⚠ ${I18n.t("mismatchOwnerAlert")}</strong>
+          <strong style="display:flex; align-items:center; gap:0.4rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            ${I18n.t("mismatchOwnerAlert")}
+          </strong>
         </div>` : ""}
       ${dupDeedEvidence ? `
         <div class="conflict-callout conflict-callout--high">
-          <strong>⚠ ${I18n.t("duplicateDeedAlert")}</strong>
+          <strong style="display:flex; align-items:center; gap:0.4rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            ${I18n.t("duplicateDeedAlert")}
+          </strong>
         </div>` : ""}
     </div>
   `;
@@ -935,7 +949,7 @@ function renderConflictTimeline(plot, analysis) {
         <div class="rtp-header">
           <span class="rtp-date">${I18n.formatDate(ev.date)}</span>
           <span class="rtp-type-badge rtp-type-${ev.type}">${isBn ? (ev.type === 'deed' ? 'দলিল' : ev.type === 'mutation' ? 'নামজারি' : 'সতর্কতা') : ev.type.toUpperCase()}</span>
-          ${ev.conflict ? `<span class="conflict-marker" title="Potential conflict indicator">⚠ ${isBn ? 'অসংগতি সূচক' : 'Conflict Indicator'}</span>` : ''}
+          ${ev.conflict ? `<span class="conflict-marker" title="Potential conflict indicator" style="display:inline-flex; align-items:center; gap:0.3rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${isBn ? 'অসংগতি সূচক' : 'Conflict Indicator'}</span>` : ''}
         </div>
         <div class="rtp-label">${ev.label}</div>
         <div class="rtp-detail">${ev.detail}</div>
@@ -981,7 +995,9 @@ function renderTriggeredRules(analysis) {
           <span class="status-badge status-active">${isBn ? 'সকল পরীক্ষায় উত্তীর্ণ' : 'ALL CHECKS PASSED'}</span>
         </div>
         <div class="all-clear" style="margin-bottom: 1rem;">
-          <span class="all-clear-icon" aria-hidden="true">✓</span>
+          <span class="all-clear-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </span>
           <p style="font-size: 1.05rem; font-weight: 600; color: var(--risk-clear); margin:0;">
             ${I18n.t("allClearDesc")}
           </p>
@@ -989,7 +1005,9 @@ function renderTriggeredRules(analysis) {
         <div class="passed-checks-list" style="display: grid; gap: 0.6rem; margin-top: 0.75rem;">
           ${passedChecks.map(c => `
             <div class="passed-check-item" style="display:flex; align-items:flex-start; gap:0.6rem; padding: 0.65rem 0.85rem; background: var(--bg-muted); border-radius: var(--radius-sm); border-left: 3px solid var(--risk-clear);">
-              <span style="color: var(--risk-clear); font-weight: 700;">✓</span>
+              <span style="color: var(--risk-clear); display: flex; align-items: center; margin-top: 2px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </span>
               <div><strong>${c.title}:</strong> ${c.desc}</div>
             </div>
           `).join("")}
@@ -1061,7 +1079,9 @@ function renderRelationshipGraph(plot) {
     const isConflicted = plot.currentOwner === "Disputed" && (name === "Disputed" || links.some(l => l.to === name && l.conflict));
     return `
       <div class="graph-node ${name === "Unknown / Not Recorded" ? 'graph-node--unknown' : ''} ${isConflicted ? 'graph-node--conflict' : ''}">
-        <div class="graph-node-icon" aria-hidden="true">👤</div>
+        <div class="graph-node-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
         <div class="graph-node-name">${escapeHtml(I18n.translateOwner(name))}</div>
       </div>
     `;
@@ -1193,7 +1213,9 @@ function renderScoreBreakdown(analysis) {
         <div class="passed-checks-list" style="display: grid; gap: 0.5rem; margin-top: 0.75rem;">
           ${passedList.map(text => `
             <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--text-primary); padding:0.4rem 0.6rem; background:var(--bg-muted); border-radius:var(--radius-sm);">
-              <span style="color: var(--risk-clear); font-weight: 700;">✓</span> ${text}
+              <span style="color: var(--risk-clear); display:inline-flex; align-items:center;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </span> ${text}
             </div>
           `).join("")}
         </div>
@@ -1211,11 +1233,11 @@ function renderScoreBreakdown(analysis) {
     const detailText = isBn && ev.detailBn ? ev.detailBn : I18n.translateEvidenceDetail(ev);
     return `
       <tr>
-        <td><span class="rule-id-badge rule-id-badge--sm">${rule.id}</span></td>
-        <td>${ruleName}</td>
-        <td><span class="severity-badge severity-${rule.severity.toLowerCase()}">${I18n.translateSeverity(rule.severity)}</span></td>
-        <td class="points-cell">+${I18n.formatNumber(pts)}</td>
-        <td class="evidence-cell">${escapeHtml(detailText.substring(0, 120))}${detailText.length > 120 ? "…" : ""}</td>
+        <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">${rule.id}</span></td>
+        <td class="col-rule-name">${ruleName}</td>
+        <td class="col-severity"><span class="severity-badge severity-${rule.severity.toLowerCase()}">${I18n.translateSeverity(rule.severity)}</span></td>
+        <td class="col-points points-cell">+${I18n.formatNumber(pts)}</td>
+        <td class="col-description evidence-cell">${escapeHtml(detailText.substring(0, 120))}${detailText.length > 120 ? "…" : ""}</td>
       </tr>
     `;
   }).join("");
@@ -1224,22 +1246,22 @@ function renderScoreBreakdown(analysis) {
     <div class="card">
       <div class="card-header"><h2 class="card-title">${I18n.t("scoreBreakdownTitle")}</h2></div>
       <div class="table-wrapper">
-        <table class="score-table" aria-label="Score breakdown table">
+        <table class="score-table rules-reference-table" aria-label="Score breakdown table">
           <thead>
             <tr>
-              <th>${I18n.t("colRuleId")}</th>
-              <th>${I18n.t("colRuleName")}</th>
-              <th>${I18n.t("colSeverity")}</th>
-              <th>${I18n.t("colPoints")}</th>
-              <th>${I18n.t("colEvidence")}</th>
+              <th class="col-rule-id">${I18n.t("colRuleId")}</th>
+              <th class="col-rule-name">${I18n.t("colRuleName")}</th>
+              <th class="col-severity">${I18n.t("colSeverity")}</th>
+              <th class="col-points">${I18n.t("colPoints")}</th>
+              <th class="col-description">${I18n.t("colEvidence")}</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
           <tfoot>
             <tr>
               <td colspan="3"><strong>${I18n.t("totalScoreLabel")}</strong></td>
-              <td class="points-cell"><strong>${I18n.formatNumber(analysis.score)}</strong></td>
-              <td></td>
+              <td class="col-points points-cell"><strong>${I18n.formatNumber(analysis.score)}</strong></td>
+              <td class="col-description"></td>
             </tr>
           </tfoot>
         </table>
@@ -1292,11 +1314,11 @@ function renderAllRulesReference() {
 
     return `
       <tr>
-        <td><span class="rule-id-badge rule-id-badge--sm">${r.id}</span></td>
-        <td><strong>${name}</strong></td>
-        <td><span class="severity-badge severity-${r.severity.toLowerCase()}">${I18n.translateSeverity(r.severity)}</span></td>
-        <td class="points-cell">${pts}</td>
-        <td>${desc}</td>
+        <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">${r.id}</span></td>
+        <td class="col-rule-name"><strong>${name}</strong></td>
+        <td class="col-severity"><span class="severity-badge severity-${r.severity.toLowerCase()}">${I18n.translateSeverity(r.severity)}</span></td>
+        <td class="col-points points-cell">${pts}</td>
+        <td class="col-description">${desc}</td>
       </tr>
     `;
   }).join("");
@@ -1308,14 +1330,14 @@ function renderAllRulesReference() {
         <span class="card-subtitle">${I18n.t("allRulesRefSub")}</span>
       </div>
       <div class="table-wrapper">
-        <table class="score-table" aria-label="All rules reference table">
+        <table class="score-table rules-reference-table" aria-label="All rules reference table">
           <thead>
             <tr>
-              <th>${I18n.t("colRuleId")}</th>
-              <th>${I18n.t("colRuleName")}</th>
-              <th>${I18n.t("colSeverity")}</th>
-              <th>${I18n.t("colPoints")}</th>
-              <th>${I18n.t("colDescription")}</th>
+              <th class="col-rule-id">${I18n.t("colRuleId")}</th>
+              <th class="col-rule-name">${I18n.t("colRuleName")}</th>
+              <th class="col-severity">${I18n.t("colSeverity")}</th>
+              <th class="col-points">${I18n.t("colPoints")}</th>
+              <th class="col-description">${I18n.t("colDescription")}</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -1338,11 +1360,11 @@ function renderAboutRules() {
       : "+" + I18n.formatNumber(r.points);
     return `
       <tr>
-        <td><span class="rule-id-badge rule-id-badge--sm">${r.id}</span></td>
-        <td><strong>${name}</strong></td>
-        <td><span class="severity-badge severity-${r.severity.toLowerCase()}">${I18n.translateSeverity(r.severity)}</span></td>
-        <td class="points-cell">${pts}</td>
-        <td style="font-size:0.82rem">${desc}</td>
+        <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">${r.id}</span></td>
+        <td class="col-rule-name"><strong>${name}</strong></td>
+        <td class="col-severity"><span class="severity-badge severity-${r.severity.toLowerCase()}">${I18n.translateSeverity(r.severity)}</span></td>
+        <td class="col-points points-cell">${pts}</td>
+        <td class="col-description">${desc}</td>
       </tr>
     `;
   }).join("");
@@ -1355,11 +1377,18 @@ function populateScenarioCards() {
   const container = document.getElementById("scenarios-container");
   if (!container) return;
 
+  const svgClear = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+  const svgWarning = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+  const svgDanger = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+  const svgIncomplete = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+  const svgMedium = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
   const scenarios = [
     {
       id: "scenario-1",
+      num: 1,
       title: I18n.t("scenario1Title"),
-      icon: "✅",
+      icon: svgClear,
       description: I18n.t("scenario1Desc"),
       plotIds: App.allPlots.filter(p => p.scenarioId === "scenario-1").map(p => p.plotId),
       riskLevel: "No Conflict Detected",
@@ -1367,8 +1396,9 @@ function populateScenarioCards() {
     },
     {
       id: "scenario-2",
+      num: 2,
       title: I18n.t("scenario2Title"),
-      icon: "⚠",
+      icon: svgWarning,
       description: I18n.t("scenario2Desc"),
       plotIds: App.allPlots.filter(p => p.scenarioId === "scenario-2").map(p => p.plotId),
       riskLevel: "High",
@@ -1376,8 +1406,9 @@ function populateScenarioCards() {
     },
     {
       id: "scenario-3",
+      num: 3,
       title: I18n.t("scenario3Title"),
-      icon: "🔴",
+      icon: svgDanger,
       description: I18n.t("scenario3Desc"),
       plotIds: App.allPlots.filter(p => p.scenarioId === "scenario-3").map(p => p.plotId),
       riskLevel: "High",
@@ -1385,8 +1416,9 @@ function populateScenarioCards() {
     },
     {
       id: "scenario-4",
+      num: 4,
       title: I18n.t("scenario4Title"),
-      icon: "⚪",
+      icon: svgIncomplete,
       description: I18n.t("scenario4Desc"),
       plotIds: App.allPlots.filter(p => p.scenarioId === "scenario-4").map(p => p.plotId),
       riskLevel: "Incomplete Data",
@@ -1394,8 +1426,9 @@ function populateScenarioCards() {
     },
     {
       id: "scenario-5",
+      num: 5,
       title: I18n.t("scenario5Title"),
-      icon: "🟠",
+      icon: svgMedium,
       description: I18n.t("scenario5Desc"),
       plotIds: App.allPlots.filter(p => p.scenarioId === "scenario-5").map(p => p.plotId),
       riskLevel: "Medium",
@@ -1403,28 +1436,53 @@ function populateScenarioCards() {
     }
   ];
 
-  container.innerHTML = scenarios.map(sc => `
-    <div class="scenario-card" id="${sc.id}">
+  container.innerHTML = scenarios.map(sc => {
+    const rClass = riskClass(sc.riskLevel);
+    const isBn = I18n.getLang() === "bn";
+    const numPadded = isBn
+      ? "০" + I18n.formatNumber(sc.num)
+      : String(sc.num).padStart(2, "0");
+
+    return `
+    <article class="scenario-card scenario-card--${rClass}" id="${sc.id}">
       <div class="scenario-card-header">
-        <span class="scenario-icon" aria-hidden="true">${sc.icon}</span>
-        <h2 class="scenario-title">${sc.title}</h2>
-        <span class="risk-badge risk-${riskClass(sc.riskLevel)}">${translateRiskLevel(sc.riskLevel)}</span>
+        <div class="scenario-header-meta">
+          <span class="scenario-number-chip" aria-label="${I18n.t("scenarioNumLabel")} ${sc.num}">${numPadded}</span>
+          <div class="scenario-icon scenario-icon--${rClass}" aria-hidden="true">${sc.icon}</div>
+        </div>
+        <span class="risk-badge risk-${rClass}">${translateRiskLevel(sc.riskLevel)}</span>
       </div>
+
+      <h2 class="scenario-title">${sc.title}</h2>
       <p class="scenario-description">${sc.description}</p>
-      <div class="scenario-highlight">${sc.highlight}</div>
-      <div class="scenario-plots">
-        <strong>${I18n.t("demoPlotsLabel")}</strong>
-        ${sc.plotIds.map(pid => `
-          <button class="btn btn-sm btn-outline scenario-plot-btn" onclick="navigateTo('plot-detail', '${pid}')">
-            ${pid}
-          </button>
-          <button class="btn btn-sm btn-primary scenario-plot-btn" onclick="navigateTo('conflict-replay', '${pid}')">
-            ${I18n.t("actionReplay")}
-          </button>
-        `).join("")}
+
+      <div class="scenario-highlight">
+        <div class="scenario-highlight-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          <span>${I18n.t("whatToCheck")}</span>
+        </div>
+        <div class="scenario-highlight-content">${sc.highlight}</div>
       </div>
-    </div>
-  `).join("");
+
+      <div class="scenario-plots">
+        <span class="scenario-plots-label">${I18n.t("demoPlotsLabel")}</span>
+        <div class="scenario-plots-actions">
+          ${sc.plotIds.map(pid => `
+            <div class="scenario-plot-unit">
+              <button class="btn btn-sm btn-outline scenario-plot-btn" onclick="navigateTo('plot-detail', '${pid}')" title="${I18n.t("viewPlot")}: ${pid}">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                <span>${pid}</span>
+              </button>
+              <button class="btn btn-sm btn-primary scenario-plot-btn scenario-replay-action" onclick="navigateTo('conflict-replay', '${pid}')" title="${I18n.t("actionReplay")} ${pid}">
+                <span>${I18n.t("actionReplay")}</span>
+              </button>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </article>
+    `;
+  }).join("");
 }
 
 function initScenarioButtons() {
@@ -1540,14 +1598,14 @@ function riskClass(level) {
 }
 
 function riskIcon(level) {
-  const map = {
-    "No Conflict Detected": "✅",
-    "Low": "✅",
-    "Medium": "🟠",
-    "High": "🔴",
-    "Incomplete Data": "⚪"
+  const icons = {
+    "No Conflict Detected": `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--risk-clear)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+    "Low": `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--risk-clear)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+    "Medium": `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--risk-medium)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
+    "High": `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--risk-high)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+    "Incomplete Data": `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--risk-incomplete)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
   };
-  return map[level] || "⚪";
+  return icons[level] || icons["Incomplete Data"];
 }
 
 function gaugeColor(score) {

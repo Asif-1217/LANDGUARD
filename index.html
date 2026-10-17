@@ -14,8 +14,8 @@
 
   <link rel="stylesheet" href="css/styles.css">
 
-  <!-- Favicon: shield emoji as SVG favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+  <!-- Favicon: shield as SVG favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2314b8a6%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z%22/></svg>">
 
   <!-- Immediate Theme & Language Initialization (Prevents FOUC) -->
   <script>
@@ -42,32 +42,32 @@
        ╚══════════════════════════════╝ -->
   <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
     <div class="sidebar-brand">
-      <div class="brand-title"><span class="brand-shield" aria-hidden="true">🛡</span> LANDGUARD</div>
+      <div class="brand-title"><svg class="brand-shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>LANDGUARD</span></div>
       <div class="brand-tagline" data-i18n="brandTagline">Land Conflict Intelligence</div>
     </div>
 
     <nav class="sidebar-nav">
       <div class="nav-section-label" data-i18n="navMain">Main</div>
       <a href="#" class="nav-link active" data-nav="dashboard" aria-current="page">
-        <span class="nav-icon" aria-hidden="true">🏠</span>
+        <span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
         <span data-i18n="navDashboard">Dashboard</span>
       </a>
       <a href="#" class="nav-link" data-nav="scenarios">
-        <span class="nav-icon" aria-hidden="true">📂</span>
+        <span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
         <span data-i18n="navScenarios">Demo Scenarios</span>
       </a>
 
       <div class="nav-section-label" data-i18n="navAnalysis">Analysis</div>
       <a href="#" class="nav-link" data-nav="plot-detail">
-        <span class="nav-icon" aria-hidden="true">🗺</span>
+        <span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>
         <span data-i18n="navPlotDetail">Plot Records</span>
       </a>
       <a href="#" class="nav-link" data-nav="conflict-replay">
-        <span class="nav-icon" aria-hidden="true">🔍</span>
+        <span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M11 8v3l2 2"/></svg></span>
         <span data-i18n="navConflictReplay">Conflict Replay</span>
       </a>
       <a href="#" class="nav-link" data-nav="risk-panel">
-        <span class="nav-icon" aria-hidden="true">📊</span>
+        <span class="nav-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
         <span data-i18n="navRiskPanel">Risk Explanation</span>
       </a>
 
@@ -149,7 +149,7 @@
           <div class="hero-banner" role="region" aria-label="Project introduction">
             <div class="hero-content">
               <h1 class="hero-title">
-                <span>🛡</span> <span data-i18n="heroTitlePrefix">LANDGUARD</span><br>
+                <svg class="brand-shield-icon" style="width:28px;height:28px;display:inline-block;vertical-align:-3px;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span data-i18n="heroTitlePrefix">LANDGUARD</span><br>
                 <span data-i18n="heroTitleSuffix">Land Conflict Intelligence</span>
               </h1>
               <p class="hero-desc" data-i18n="heroDesc">
@@ -171,25 +171,25 @@
           <!-- Stats Cards -->
           <div class="stats-grid" role="region" aria-label="Dataset summary statistics">
             <div class="stat-card stat-card--total">
-              <div class="stat-icon" aria-hidden="true">🗺</div>
+              <div class="stat-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div>
               <div class="stat-number" id="stat-total">0</div>
               <div class="stat-label" data-i18n="statTotalPlots">Total Demo Plots</div>
               <div class="stat-sublabel" data-i18n="statTotalPlotsSub">In synthetic dataset</div>
             </div>
             <div class="stat-card stat-card--conflicts">
-              <div class="stat-icon" aria-hidden="true">⚠</div>
+              <div class="stat-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
               <div class="stat-number" id="stat-conflicts">0</div>
               <div class="stat-label" data-i18n="statConflicts">Potential Conflicts</div>
               <div class="stat-sublabel" data-i18n="statConflictsSub">Medium or High risk level</div>
             </div>
             <div class="stat-card stat-card--incomplete">
-              <div class="stat-icon" aria-hidden="true">⚪</div>
+              <div class="stat-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
               <div class="stat-number" id="stat-incomplete">0</div>
               <div class="stat-label" data-i18n="statIncomplete">Incomplete Records</div>
               <div class="stat-sublabel" data-i18n="statIncompleteSub">Partial or incomplete data</div>
             </div>
             <div class="stat-card stat-card--reviewed">
-              <div class="stat-icon" aria-hidden="true">✅</div>
+              <div class="stat-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
               <div class="stat-number" id="stat-reviewed">0</div>
               <div class="stat-label" data-i18n="statReviewed">Records Reviewed</div>
               <div class="stat-sublabel" data-i18n="statReviewedSub">In this demo session</div>
@@ -202,7 +202,7 @@
           <!-- Recent Cases -->
           <div class="card">
             <div class="card-header">
-              <h2 class="card-title" data-i18n="demoRecordsTitle">📋 Demo Land Records</h2>
+              <h2 class="card-title" data-i18n="demoRecordsTitle">Demo Land Records</h2>
               <button class="btn btn-primary btn-sm" id="explore-demo-btn" data-i18n="exploreScenariosBtn">
                 Explore Demo Scenarios →
               </button>
@@ -222,7 +222,7 @@
           <!-- Disclaimer Card -->
           <div class="card" role="note" aria-label="Responsible use disclaimer" style="border-left: 4px solid var(--warning);">
             <div class="card-header">
-              <h2 class="card-title" data-i18n="disclaimerTitle">⚠ Responsible Use Disclaimer</h2>
+              <h2 class="card-title" data-i18n="disclaimerTitle">Responsible Use Disclaimer</h2>
             </div>
             <p data-i18n="disclaimerBody" style="font-size: 0.875rem; line-height: 1.8; color: var(--text-secondary);">
               LANDGUARD is an educational prototype using synthetic demonstration data. It is not an official land-record verification service, legal opinion, or proof of fraud. Results indicate potential inconsistencies in the demo dataset and require verification through authorized sources and qualified professionals. All names, plot IDs, deed IDs, and property descriptions are entirely fictional.
@@ -235,10 +235,36 @@
              ║  PAGE 2: DEMO SCENARIOS                              ║
              ╚══════════════════════════════════════════════════════╝ -->
         <section class="page" id="page-scenarios" aria-label="Demo scenarios">
-          <h1 class="page-title" data-i18n="scenariosPageTitle">📂 Demo Scenarios</h1>
-          <p class="page-subtitle" data-i18n="scenariosPageSubtitle">
-            Five ready-to-run scenarios demonstrating different conflict indicator patterns. Click 'Replay →' on any plot to open the Land Conflict Replay view.
-          </p>
+          <div class="scenarios-header-wrap">
+            <div class="scenarios-header-text">
+              <h1 class="page-title" data-i18n="scenariosPageTitle">Demo Scenarios</h1>
+              <p class="page-subtitle" data-i18n="scenariosPageSubtitle">
+                Five ready-to-run scenarios demonstrating different conflict indicator patterns. Click 'Replay →' on any plot to open the Land Conflict Replay view.
+              </p>
+            </div>
+            <div class="scenarios-stats-bar" aria-label="Scenario summary">
+              <span class="scenarios-stat-pill stat-pill--total">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span data-i18n="statsTotal">5 Scenarios</span>
+              </span>
+              <span class="scenarios-stat-pill stat-pill--low">
+                <span class="stat-dot stat-dot--low" aria-hidden="true"></span>
+                <span data-i18n="statsLow">2 Low Risk</span>
+              </span>
+              <span class="scenarios-stat-pill stat-pill--medium">
+                <span class="stat-dot stat-dot--medium" aria-hidden="true"></span>
+                <span data-i18n="statsMedium">1 Medium Risk</span>
+              </span>
+              <span class="scenarios-stat-pill stat-pill--high">
+                <span class="stat-dot stat-dot--high" aria-hidden="true"></span>
+                <span data-i18n="statsHigh">2 High Risk</span>
+              </span>
+              <span class="scenarios-stat-pill stat-pill--incomplete">
+                <span class="stat-dot stat-dot--incomplete" aria-hidden="true"></span>
+                <span data-i18n="statsIncomplete">1 Incomplete</span>
+              </span>
+            </div>
+          </div>
           <div class="scenarios-grid" id="scenarios-container">
             <!-- Populated by JS -->
           </div>
@@ -251,7 +277,7 @@
           <div id="plot-detail-content">
             <!-- Initial empty state before search -->
             <div class="empty-state">
-              <div class="empty-icon" aria-hidden="true">🗺</div>
+              <div class="empty-icon" aria-hidden="true"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div>
               <h2 data-i18n="emptyPlotDetailTitle">Plot Records</h2>
               <p data-i18n="emptyPlotDetailDesc">Search for a Plot ID using the bar above, or select a demo plot below:</p>
               <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
@@ -272,7 +298,7 @@
         <section class="page" id="page-conflict-replay" aria-label="Land conflict replay">
           <div id="conflict-replay-content">
             <div class="empty-state">
-              <div class="empty-icon" aria-hidden="true">🔍</div>
+              <div class="empty-icon" aria-hidden="true"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M11 8v3l2 2"/></svg></div>
               <h2 data-i18n="emptyReplayTitle">Land Conflict Replay</h2>
               <p data-i18n="emptyReplayDesc">Select a demo plot below to inspect its record comparison and conflict replay:</p>
               <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
@@ -293,7 +319,7 @@
         <section class="page" id="page-risk-panel" aria-label="Risk explanation panel">
           <div id="risk-panel-content">
             <div class="empty-state">
-              <div class="empty-icon" aria-hidden="true">📊</div>
+              <div class="empty-icon" aria-hidden="true"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
               <h2 data-i18n="emptyRiskTitle">Risk Explanation</h2>
               <p data-i18n="emptyRiskDesc">Select a demo plot below to inspect its rule-based risk score breakdown:</p>
               <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:1rem 0;">
@@ -331,7 +357,7 @@
 
           <div class="card">
             <div class="card-header">
-              <h2 class="card-title" data-i18n="allRulesRefTitle">📋 All Rules Reference</h2>
+              <h2 class="card-title" data-i18n="aboutRulesRefTitle">📋 All Rules Reference</h2>
               <span class="card-subtitle" data-i18n="allRulesRefSub">Transparent &amp; Reproducible — No black-box AI</span>
             </div>
             <p style="font-size:0.875rem; margin-bottom:1rem; color:var(--text-secondary);" data-i18n="allRulesRefIntro">
@@ -341,65 +367,65 @@
 
             <!-- Rules Table -->
             <div class="table-wrapper">
-              <table class="score-table" aria-label="Scoring rules reference">
+              <table class="score-table rules-reference-table" aria-label="Scoring rules reference">
                 <thead>
                   <tr>
-                    <th data-i18n="colRuleId">Rule ID</th>
-                    <th data-i18n="colRuleName">Rule Name</th>
-                    <th data-i18n="colSeverity">Severity</th>
-                    <th data-i18n="colPoints">Points</th>
-                    <th data-i18n="colDescription">Description</th>
+                    <th class="col-rule-id" data-i18n="colRuleId">Rule ID</th>
+                    <th class="col-rule-name" data-i18n="colRuleName">Rule Name</th>
+                    <th class="col-severity" data-i18n="colSeverity">Severity</th>
+                    <th class="col-points" data-i18n="colPoints">Points</th>
+                    <th class="col-description" data-i18n="colDescription">Description</th>
                   </tr>
                 </thead>
                 <tbody id="about-rules-tbody">
                   <tr>
-                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-01</span></td>
-                    <td><strong>Ownership Mismatch</strong></td>
-                    <td><span class="severity-badge severity-high">HIGH</span></td>
-                    <td class="points-cell">+40</td>
-                    <td style="font-size:0.82rem">Deed and mutation records show different owner names for the same plot.</td>
+                    <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">RULE-01</span></td>
+                    <td class="col-rule-name"><strong>Ownership Mismatch</strong></td>
+                    <td class="col-severity"><span class="severity-badge severity-high">HIGH</span></td>
+                    <td class="col-points points-cell">+40</td>
+                    <td class="col-description">Deed and mutation records show different owner names for the same plot.</td>
                   </tr>
                   <tr>
-                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-02</span></td>
-                    <td><strong>Duplicate Active Deeds</strong></td>
-                    <td><span class="severity-badge severity-high">HIGH</span></td>
-                    <td class="points-cell">+45</td>
-                    <td style="font-size:0.82rem">Multiple deeds with Active status exist for the same plot.</td>
+                    <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">RULE-02</span></td>
+                    <td class="col-rule-name"><strong>Duplicate Active Deeds</strong></td>
+                    <td class="col-severity"><span class="severity-badge severity-high">HIGH</span></td>
+                    <td class="col-points points-cell">+45</td>
+                    <td class="col-description">Multiple deeds with Active status exist for the same plot.</td>
                   </tr>
                   <tr>
-                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-03</span></td>
-                    <td><strong>Missing Mutation Record</strong></td>
-                    <td><span class="severity-badge severity-medium">MEDIUM</span></td>
-                    <td class="points-cell">+15</td>
-                    <td style="font-size:0.82rem">No mutation record found after deed registration.</td>
+                    <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">RULE-03</span></td>
+                    <td class="col-rule-name"><strong>Missing Mutation Record</strong></td>
+                    <td class="col-severity"><span class="severity-badge severity-medium">MEDIUM</span></td>
+                    <td class="col-points points-cell">+15</td>
+                    <td class="col-description">No mutation record found after deed registration.</td>
                   </tr>
                   <tr>
-                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-04</span></td>
-                    <td><strong>Unlinked Transfer Record</strong></td>
-                    <td><span class="severity-badge severity-medium">MEDIUM</span></td>
-                    <td class="points-cell">+10</td>
-                    <td style="font-size:0.82rem">Transfer history entry lacks corresponding deed or mutation cross-reference.</td>
+                    <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">RULE-04</span></td>
+                    <td class="col-rule-name"><strong>Unlinked Transfer Record</strong></td>
+                    <td class="col-severity"><span class="severity-badge severity-medium">MEDIUM</span></td>
+                    <td class="col-points points-cell">+10</td>
+                    <td class="col-description">Transfer history entry lacks corresponding deed or mutation cross-reference.</td>
                   </tr>
                   <tr>
-                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-05</span></td>
-                    <td><strong>Unverified Deed</strong></td>
-                    <td><span class="severity-badge severity-medium">MEDIUM</span></td>
-                    <td class="points-cell">+10</td>
-                    <td style="font-size:0.82rem">Deed verification status is other than "Verified".</td>
+                    <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">RULE-05</span></td>
+                    <td class="col-rule-name"><strong>Unverified Deed</strong></td>
+                    <td class="col-severity"><span class="severity-badge severity-medium">MEDIUM</span></td>
+                    <td class="col-points points-cell">+10</td>
+                    <td class="col-description">Deed verification status is other than "Verified".</td>
                   </tr>
                   <tr>
-                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-06</span></td>
-                    <td><strong>Chronological Inconsistency</strong></td>
-                    <td><span class="severity-badge severity-high">HIGH</span></td>
-                    <td class="points-cell">+20</td>
-                    <td style="font-size:0.82rem">Transfer date predates its referenced deed registration date.</td>
+                    <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">RULE-06</span></td>
+                    <td class="col-rule-name"><strong>Chronological Inconsistency</strong></td>
+                    <td class="col-severity"><span class="severity-badge severity-high">HIGH</span></td>
+                    <td class="col-points points-cell">+20</td>
+                    <td class="col-description">Transfer date predates its referenced deed registration date.</td>
                   </tr>
                   <tr>
-                    <td><span class="rule-id-badge rule-id-badge--sm">RULE-07</span></td>
-                    <td><strong>Missing Critical Fields</strong></td>
-                    <td><span class="severity-badge severity-low">LOW</span></td>
-                    <td class="points-cell">+5/field (max 20)</td>
-                    <td style="font-size:0.82rem">Required fields (area, consideration, witness) are absent from the record.</td>
+                    <td class="col-rule-id"><span class="rule-id-badge rule-id-badge--sm">RULE-07</span></td>
+                    <td class="col-rule-name"><strong>Missing Critical Fields</strong></td>
+                    <td class="col-severity"><span class="severity-badge severity-low">LOW</span></td>
+                    <td class="col-points points-cell">+5/field (max 20)</td>
+                    <td class="col-description">Required fields (area, consideration, witness) are absent from the record.</td>
                   </tr>
                 </tbody>
               </table>
